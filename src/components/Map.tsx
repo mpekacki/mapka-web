@@ -36,12 +36,15 @@ const ResizeMap = () => {
 
 const FitBounds = (props: { markers: MyMarker[] }) => {
   const map = useMap();
+  const dispatch = useAppDispatch();
+  const shouldFitBounds = useAppSelector(selectShouldFitBounds);
+  const { markers } = props;
   useEffect(() => {
-    if (props.markers.length === 0) {
+    if (!shouldFitBounds || markers.length === 0) {
       return;
     }
     const bounds = new LatLngBounds(
-      props.markers.map((m) => [m.latitude, m.longitude])
+      markers.map((m) => [m.latitude, m.longitude])
     );
     const timer = setTimeout(() => {
       map.fitBounds(bounds, {
@@ -49,9 +52,15 @@ const FitBounds = (props: { markers: MyMarker[] }) => {
         paddingTopLeft: [50, 50],
         maxZoom: 17,
       });
+      // reset the flag only after the fit has actually run, so re-renders
+      // in the meantime can't cancel it
+      dispatch(setShouldFitBounds(false));
     }, 100);
     return () => clearTimeout(timer);
-  });
+    // markers gets a new identity every render; depend on the count so a
+    // pending fit isn't restarted by unrelated re-renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldFitBounds, markers.length, map, dispatch]);
   return null;
 };
 
@@ -84,10 +93,8 @@ const containerStyle = {
 };
 
 const Map = () => {
-  const dispatch = useAppDispatch();
   const markers = useAppSelector(selectMarkers).filter((m) => m.visible);
   const playerPosition = useAppSelector(selectPlayerPosition);
-  const shouldFitBounds = useAppSelector(selectShouldFitBounds);
   if (playerPosition) {
     markers.push({
       id: 'player',
@@ -97,11 +104,6 @@ const Map = () => {
       visible: true,
     });
   }
-  useEffect(() => {
-    if (shouldFitBounds) {
-      dispatch(setShouldFitBounds(false));
-    }
-  }, [shouldFitBounds, dispatch]);
   return (
     <MapContainer style={containerStyle} center={[51.505, -0.09]} zoom={13}>
       <ResizeMap />
@@ -123,7 +125,7 @@ const Map = () => {
           </Tooltip>
         </Marker>
       ))}
-      {shouldFitBounds && <FitBounds markers={markers} />}
+      <FitBounds markers={markers} />
     </MapContainer>
   );
 };
