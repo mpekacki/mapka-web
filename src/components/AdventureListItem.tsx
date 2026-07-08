@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { ChevronRightIcon } from './icons';
 
 import { useAppSelector } from '../hooks';
 import {
@@ -55,7 +56,13 @@ const AdventureListItem = ({
           ) : null}
         </p>
       </div>
-      {isLoading && <div className="spinner" />}
+      {isLoading ? (
+        <div className="spinner" />
+      ) : (
+        <span className="chevron">
+          <ChevronRightIcon />
+        </span>
+      )}
     </Link>
   );
 };

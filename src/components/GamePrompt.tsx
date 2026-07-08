@@ -49,7 +49,8 @@ const GamePrompt = () => {
         {adventure.currentStep.choices.map((choice, index) => {
           const marker = markers.find((m) => m.id === choice.markerId);
           let distance;
-          let isActive = true;
+          // choices without a marker are gated only by inventory requirements
+          let isActive = choice.areRequirementsMet;
           let bearingIcon;
           if (marker && playerPosition) {
             distance = new LatLng(
@@ -83,15 +84,18 @@ const GamePrompt = () => {
                   )
                 }
               >
-                {index + 1}. {!choice.areRequirementsMet && '(UNAVAILABLE) '}
-                {choice.text}
-                {distance &&
-                  (!isActive || choice.markerHidden) &&
-                  ` (${
-                    choice.markerHidden && !isActive ? '???' : marker?.label
-                  }, ${Math.ceil(distance)} m${
-                    bearingIcon ? ` ${bearingIcon}` : ''
-                  })`}
+                <span>
+                  {index + 1}. {!choice.areRequirementsMet && '(UNAVAILABLE) '}
+                  {choice.text}
+                </span>
+                {distance && (!isActive || choice.markerHidden) ? (
+                  <span className="choice-meta">
+                    {choice.markerHidden && !isActive ? '???' : marker?.label}
+                    {' · '}
+                    {Math.ceil(distance)} m
+                    {bearingIcon ? ` ${bearingIcon}` : ''}
+                  </span>
+                ) : null}
               </button>
             </li>
           );

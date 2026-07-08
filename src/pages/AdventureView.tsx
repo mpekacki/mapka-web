@@ -15,6 +15,7 @@ import {
   getAdventure,
   isAdventureLoading,
 } from '../features/adventuresSlice';
+import { ArrowLeftIcon, RefreshIcon, LocateIcon } from '../components/icons';
 
 function AdventureView() {
   const params = useParams<{ id: string }>();
@@ -46,8 +47,8 @@ function AdventureView() {
   return (
     <div className="page">
       <header className="toolbar">
-        <Link to="/" className="button button-clear" aria-label="Back">
-          ←
+        <Link to="/" className="icon-button" aria-label="Back">
+          <ArrowLeftIcon />
         </Link>
         <div className="toolbar-actions">
           <label className="toggle-label">
@@ -60,18 +61,18 @@ function AdventureView() {
             />
           </label>
           <button
-            className="button button-clear"
+            className="icon-button"
             aria-label="Reload adventure"
             onClick={onClickReload}
           >
-            ⟳
+            <RefreshIcon />
           </button>
           <button
-            className="button button-clear"
+            className="icon-button"
             aria-label="Locate me"
             onClick={() => dispatch(thunkLocateAndCenter())}
           >
-            ◎
+            <LocateIcon />
           </button>
         </div>
       </header>

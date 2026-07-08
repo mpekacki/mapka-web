@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { ChevronUpIcon, ChevronDownIcon } from './icons';
 
 interface BottomSheetProps {
   /** snap points as fractions of the viewport height, ascending */
@@ -75,7 +76,7 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
             setSnapIndex(isExpanded ? initialSnap : snapPoints.length - 1)
           }
         >
-          {isExpanded ? '▾' : '▴'}
+          {isExpanded ? <ChevronDownIcon /> : <ChevronUpIcon />}
         </button>
       </div>
       <div className="bottom-sheet-content">{children}</div>

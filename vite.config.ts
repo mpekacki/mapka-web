@@ -14,7 +14,7 @@ export default defineConfig({
         name: 'Mapka',
         short_name: 'Mapka',
         description: 'Location-based adventures on a real-world map',
-        theme_color: '#1f6feb',
+        theme_color: '#4361ee',
         background_color: '#ffffff',
         display: 'standalone',
         start_url: '.',
