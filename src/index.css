@@ -288,6 +288,10 @@ input[type='text']::placeholder {
   white-space: nowrap;
 }
 
+.adventure-item .adventure-item-badges {
+  margin-top: 4px;
+}
+
 .adventure-item .chevron {
   color: var(--text-muted);
   display: inline-flex;

@@ -50,17 +50,19 @@ const AdventureListItem = ({
       ></div>
       <div className="adventure-item-body">
         <h2>{adventureName}</h2>
-        <p>
-          {adventureDescription}{' '}
-          {farthestDistance ? (
-            <span className="badge">
-              {closestDistance} - {farthestDistance} m
-            </span>
-          ) : null}{' '}
-          {biggestDistance ? (
-            <span className="badge badge-danger">{biggestDistance} m</span>
-          ) : null}
-        </p>
+        <p>{adventureDescription}</p>
+        {farthestDistance || biggestDistance ? (
+          <p className="adventure-item-badges">
+            {farthestDistance ? (
+              <span className="badge">
+                {closestDistance} - {farthestDistance} m
+              </span>
+            ) : null}{' '}
+            {biggestDistance ? (
+              <span className="badge badge-danger">{biggestDistance} m</span>
+            ) : null}
+          </p>
+        ) : null}
         {error && !isLoading ? (
           <p className="adventure-item-error">{error}</p>
         ) : null}
