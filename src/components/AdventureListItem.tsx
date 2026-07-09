@@ -15,6 +15,7 @@ interface AdventureListItemProps {
   closestDistance: number;
   farthestDistance: number;
   biggestDistance: number;
+  error?: string;
 }
 
 const AdventureListItem = ({
@@ -24,6 +25,7 @@ const AdventureListItem = ({
   closestDistance,
   farthestDistance,
   biggestDistance,
+  error,
 }: AdventureListItemProps) => {
   const isStarted = useAppSelector(isAlreadyStarted(adventureId));
   const isLoading = useAppSelector(isAdventureLoading(adventureId));
@@ -59,6 +61,9 @@ const AdventureListItem = ({
             <span className="badge badge-danger">{biggestDistance} m</span>
           ) : null}
         </p>
+        {error && !isLoading ? (
+          <p className="adventure-item-error">{error}</p>
+        ) : null}
       </div>
       {isLoading ? (
         <div className="loading-progress">

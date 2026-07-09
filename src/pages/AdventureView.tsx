@@ -114,6 +114,17 @@ function AdventureView() {
             )}
           </div>
         )}
+        {!isLoading && adventure?.error && (
+          <div className="loading-overlay">
+            <p className="error-message">{adventure.error}</p>
+            <button
+              className="button"
+              onClick={() => dispatch(thunkStartAdventure(adventureId, true))}
+            >
+              Try again
+            </button>
+          </div>
+        )}
       </main>
     </div>
   );

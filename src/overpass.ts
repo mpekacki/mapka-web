@@ -16,6 +16,15 @@ export interface OsmElement {
   };
 }
 
+// thrown when every Overpass endpoint has been tried and none answered,
+// so callers can tell a server problem apart from other failures
+export class OverpassError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "OverpassError";
+  }
+}
+
 // Public Overpass instances, tried in order until one answers.
 // See https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances
 // As of mid-2026 the overpass-api.de pool is the only reliable full-planet
@@ -104,7 +113,9 @@ async function fetchWithFallback(query: string): Promise<OsmData> {
         }
       }
     }
-    throw lastError;
+    throw new OverpassError(
+      lastError instanceof Error ? lastError.message : String(lastError)
+    );
   } finally {
     releaseSlot();
   }

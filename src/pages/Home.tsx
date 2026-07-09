@@ -52,6 +52,7 @@ const Home = () => {
                 closestDistance={a.closestDistance}
                 farthestDistance={a.farthestDistance}
                 biggestDistance={a.biggestDistance}
+                error={a.error}
               />
             ))}
         </div>

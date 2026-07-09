@@ -13,6 +13,7 @@ import {
 import { ADVENTURES } from "../exampleAdventures";
 import { LatLng } from "leaflet";
 import { getCurrentPosition } from "../geolocation";
+import { OverpassError } from "../overpass";
 
 export interface AdventuresState {
   availableAdventures: AdventureDefinition[];
@@ -36,6 +37,8 @@ export interface Adventure {
   inventory: Inventory;
   biggestDistance: number;
   customStyles?: CustomStyles;
+  // user-facing message set when the adventure failed to load
+  error?: string;
 }
 
 export interface Step {
@@ -230,6 +233,12 @@ export const thunkStartAdventures =
         );
       } catch (e) {
         console.error(e);
+        const error =
+          e instanceof OverpassError
+            ? "There was a problem with the Overpass map server. Please try again later."
+            : typeof e === "string"
+            ? e
+            : "Failed to load the adventure. Please try again.";
         dispatch(
           adventureStarted({
             id: adventureId,
@@ -241,6 +250,7 @@ export const thunkStartAdventures =
             },
             inventory: {},
             biggestDistance: 0,
+            error,
           })
         );
       } finally {
@@ -386,6 +396,7 @@ export const selectAvailableAdventures = (state: RootState) => {
       farthestDistance: distances.length ? Math.max(...distances) : 0,
       biggestDistance: adventure ? adventure.biggestDistance : 0,
       isLoading: isAdventureLoading(a.id)(state),
+      error: adventure?.error,
     };
   });
 };

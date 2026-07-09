@@ -405,6 +405,18 @@ input[type='text']::placeholder {
   font-weight: 400;
 }
 
+.loading-overlay .error-message {
+  color: var(--danger);
+  max-width: min(80%, 400px);
+  text-align: center;
+}
+
+.adventure-item-error {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  color: var(--danger);
+}
+
 .loading-progress {
   display: flex;
   align-items: center;
