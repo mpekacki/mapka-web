@@ -18,13 +18,41 @@ export interface OsmElement {
 
 // Public Overpass instances, tried in order until one answers.
 // See https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances
-// (overpass.kumi.systems was handed over to private.coffee and is unreliable,
-// so it is kept only as a last resort.)
-const ENDPOINTS = [
-  "https://overpass-api.de/api/interpreter",
-  "https://lz4.overpass-api.de/api/interpreter",
-  "https://overpass.private.coffee/api/interpreter",
+// As of mid-2026 the overpass-api.de pool is the only reliable full-planet
+// public instance; it allows ~2 request slots per IP, so requests are queued
+// (see MAX_CONCURRENT) and busy responses are retried with a delay.
+// (overpass.kumi.systems was handed over to private.coffee and rarely
+// responds, so it gets a short timeout and serves only as a last resort.)
+const ENDPOINTS: { url: string; timeoutMs: number }[] = [
+  { url: "https://overpass-api.de/api/interpreter", timeoutMs: 20_000 },
+  { url: "https://lz4.overpass-api.de/api/interpreter", timeoutMs: 20_000 },
+  { url: "https://overpass.private.coffee/api/interpreter", timeoutMs: 8_000 },
 ];
+
+// overpass-api.de grants two request slots per IP; exceeding them just
+// produces 429s, so funnel all queries through a two-slot queue
+const MAX_CONCURRENT = 2;
+const RETRIES_PER_ENDPOINT = 2;
+const BUSY_RETRY_DELAY_MS = 2_000;
+
+let activeRequests = 0;
+const waiters: (() => void)[] = [];
+
+async function acquireSlot(): Promise<void> {
+  if (activeRequests < MAX_CONCURRENT) {
+    activeRequests++;
+    return;
+  }
+  await new Promise<void>((resolve) => waiters.push(resolve));
+  activeRequests++;
+}
+
+function releaseSlot(): void {
+  activeRequests--;
+  waiters.shift()?.();
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function buildOverpassQuery(boundsObj: LatLngBounds, overpassQuery: string) {
   const bounds = `${boundsObj.getSouth()},${boundsObj.getWest()},${boundsObj.getNorth()},${boundsObj.getEast()}`;
@@ -39,30 +67,47 @@ function buildOverpassQuery(boundsObj: LatLngBounds, overpassQuery: string) {
 let preferredEndpoint = 0;
 
 async function fetchWithFallback(query: string): Promise<OsmData> {
-  let lastError: unknown;
-  for (let i = 0; i < ENDPOINTS.length; i++) {
-    const index = (preferredEndpoint + i) % ENDPOINTS.length;
-    const endpoint = ENDPOINTS[index];
-    const url = `${endpoint}?data=${encodeURIComponent(query)}`;
-    try {
-      const response = await fetch(url, {
-        // the query itself times out at 15 s, so give the server a bit more
-        signal: AbortSignal.timeout(20_000),
-      });
-      if (!response.ok) {
-        throw new Error(
-          `${endpoint} responded ${response.status} ${response.statusText}`
-        );
+  await acquireSlot();
+  try {
+    let lastError: unknown;
+    for (let i = 0; i < ENDPOINTS.length; i++) {
+      const index = (preferredEndpoint + i) % ENDPOINTS.length;
+      const endpoint = ENDPOINTS[index];
+      const url = `${endpoint.url}?data=${encodeURIComponent(query)}`;
+      for (let attempt = 0; attempt < RETRIES_PER_ENDPOINT; attempt++) {
+        try {
+          const response = await fetch(url, {
+            signal: AbortSignal.timeout(endpoint.timeoutMs),
+          });
+          if (response.status === 429 || response.status === 504) {
+            // server is busy — wait briefly and retry the same endpoint
+            lastError = new Error(
+              `${endpoint.url} responded ${response.status} (busy)`
+            );
+            console.warn("Overpass endpoint busy, retrying", endpoint.url);
+            await sleep(BUSY_RETRY_DELAY_MS);
+            continue;
+          }
+          if (!response.ok) {
+            throw new Error(
+              `${endpoint.url} responded ${response.status} ${response.statusText}`
+            );
+          }
+          const data = await response.json();
+          preferredEndpoint = index;
+          return data;
+        } catch (error) {
+          // network error or timeout — move on to the next endpoint
+          console.warn("Overpass request failed, trying next endpoint", error);
+          lastError = error;
+          break;
+        }
       }
-      const data = await response.json();
-      preferredEndpoint = index;
-      return data;
-    } catch (error) {
-      console.warn("Overpass request failed, trying next endpoint", error);
-      lastError = error;
     }
+    throw lastError;
+  } finally {
+    releaseSlot();
   }
-  throw lastError;
 }
 
 const cache: { [key: string]: Promise<OsmData> } = {};
