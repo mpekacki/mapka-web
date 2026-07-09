@@ -885,6 +885,468 @@ export const ADVENTURES: AdventureDefinition[] = [
       },
     ],
   },
+  {
+    id: "6",
+    title: "The Peculiar Inheritance",
+    description: "A great-aunt you've never heard of left you 'everything'",
+    customStyles: {
+      "font-family": "Georgia, serif",
+      color: "#2e2a24",
+      "background-color": "#efe9dd",
+      padding: "12px",
+      "border-radius": "12px",
+    },
+    places: [
+      {
+        id: "townHall",
+        name: "The town hall",
+        osmQuery: places.townHall,
+      },
+      {
+        id: "library",
+        name: "The library",
+        osmQuery: places.library,
+        closeTo: "townHall",
+      },
+      {
+        id: "bank",
+        name: "The bank",
+        osmQuery: places.bank,
+        closeTo: "library",
+      },
+      {
+        id: "viewpoint",
+        name: "The viewpoint",
+        osmQuery: places.viewpoint,
+        closeTo: "bank",
+      },
+    ],
+    steps: [
+      {
+        id: "0",
+        title: "The letter",
+        text: `# You have inherited: everything\n\nThe letter is on heavy cream paper and smells faintly of lavender.\n\n> *To the sole heir of Marguerite Ellsworth-Puddle: present yourself at the town hall to claim what is yours. Bring patience. — E. Grimble, Notary*\n\nYou have never heard of Marguerite Ellsworth-Puddle. You are already putting your shoes on.`,
+        choices: [
+          {
+            id: "0",
+            text: "See the notary at the town hall",
+            place: { id: "townHall" },
+            nextStepId: "1",
+          },
+        ],
+      },
+      {
+        id: "1",
+        title: "The notary",
+        text: `Mr. Grimble is approximately two hundred years old and produces a small brass key from a drawer that shrieks.\n\n"Deposit box 41, at the bank," he says. "But your great-aunt insisted — *insisted* — that you first look up her name in the library archive. She said, and I quote: '*otherwise the child won't understand a thing.*'"`,
+        inventoryModification: {
+          key: { operation: InventoryOperation.ADD, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "Do it properly — visit the library archive",
+            place: { id: "library" },
+            nextStepId: "2",
+          },
+          {
+            id: "1",
+            text: "Skip the homework, go straight to the bank",
+            place: { id: "bank" },
+            nextStepId: "3",
+          },
+        ],
+      },
+      {
+        id: "2",
+        title: "The archive",
+        text: `The newspaper archive smells of dust and secrets. And there she is, in a 1962 clipping:\n\n**"LOCAL WOMAN REFUSES TO SELL HILL, BUILDS BENCH INSTEAD."**\n\nA photograph of a fierce little woman on a hilltop bench, arms crossed at the photographer. The caption: *"Everyone deserves the view," says Miss Ellsworth-Puddle.*\n\nYou copy down the location of the hill.`,
+        inventoryModification: {
+          understanding: { operation: InventoryOperation.ADD, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "Now, the deposit box",
+            place: { id: "bank" },
+            nextStepId: "3",
+          },
+        ],
+      },
+      {
+        id: "3",
+        title: "Box 41",
+        text: `The clerk leads you into the vault. Box 41 opens with your brass key.\n\nInside:\n\n- a folded paper marked **DEED**\n- a smaller envelope marked *"read me at the top"*\n\nThe deed is for a hill. An entire hill. With a bench on it.`,
+        inventoryModification: {
+          key: { operation: InventoryOperation.ADD, value: -1 },
+          deed: { operation: InventoryOperation.ADD, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "Climb to the viewpoint and read the envelope",
+            place: { id: "viewpoint" },
+            distanceThreshold: 100,
+            nextStepId: "4",
+          },
+        ],
+      },
+      {
+        id: "4",
+        title: "The top of the hill",
+        text: `The bench is old but solid. The view is *ridiculous* — the whole town laid out like a model railway.\n\nYou open the envelope.`,
+        choices: [
+          {
+            id: "0",
+            text: "Read it, knowing who she was",
+            inventoryCheck: {
+              understanding: {
+                operator: ComparisonOperator.GREATER_THAN_OR_EQUAL,
+                value: 1,
+              },
+            },
+            nextStepId: "5",
+          },
+          {
+            id: "1",
+            text: "Read it",
+            inventoryCheck: {
+              understanding: {
+                operator: ComparisonOperator.LESS_THAN,
+                value: 1,
+              },
+            },
+            nextStepId: "6",
+          },
+        ],
+      },
+      {
+        id: "5",
+        title: "Everyone deserves the view",
+        text: `> *"So you did your homework. Good. Then you know this hill isn't for owning — it's for keeping. Keep the bench painted. Chase off developers. Let people sit.*\n>\n> *Everyone deserves the view.*\n>\n> *— Your great-aunt Marguerite"*\n\nBelow you, the town glows in the late light. Someone has to look after this. Apparently, that's you now.\n\n**THE KEEPER OF THE HILL.**`,
+        choices: [],
+      },
+      {
+        id: "6",
+        title: "A nice bench, though",
+        text: `> *"I asked Grimble to send you to the archive first. I* knew *you'd skip it. Fine. Short version: this hill is yours, and it comes with one rule — let people sit on the bench.*\n>\n> *Now go back and read the clipping anyway. I was very photogenic in 1962.*\n>\n> *— M.E.P."*\n\nYou inherited a hill from a woman who is still bossing you around from beyond the grave. Fair enough.\n\n**INHERITED: ONE HILL, SOME HOMEWORK.**`,
+        choices: [],
+      },
+    ],
+  },
+  {
+    id: "7",
+    title: "Zlorp Needs a Ride Home",
+    description: "A very polite alien has missed its bus. Yes, bus.",
+    customStyles: {
+      "font-family": "'Trebuchet MS', sans-serif",
+      color: "#bff5e0",
+      "background-color": "#0d1f1a",
+      padding: "12px",
+      "border-radius": "12px",
+    },
+    places: [
+      {
+        id: "busStop",
+        name: "The bus stop",
+        osmQuery: places.busStop,
+      },
+      {
+        id: "hairdresser",
+        name: "The hairdresser",
+        osmQuery: places.hairdresser,
+        closeTo: "busStop",
+      },
+      {
+        id: "fastFood",
+        name: "The fast food place",
+        osmQuery: places.fastFood,
+        closeTo: "busStop",
+      },
+      {
+        id: "viewpoint",
+        name: "The viewpoint",
+        osmQuery: places.viewpoint,
+        closeTo: "busStop",
+      },
+    ],
+    steps: [
+      {
+        id: "0",
+        title: "An unusual commuter",
+        text: `# There is an alien at the bus stop\n\nIt is seven feet tall, faintly teal, and studying the timetable with three eyes.\n\n"Greetings," it says. "I am Zlorp. My collection vessel departs from *the highest local vantage point* at dusk. Until then I must not cause… what is your word… **a scene**."\n\nA bus pulls up. The driver looks at Zlorp. The driver drives on.\n\n"I may already be causing a scene," Zlorp admits.`,
+        choices: [
+          {
+            id: "0",
+            text: "Get Zlorp a disguise first",
+            place: { id: "hairdresser" },
+            nextStepId: "1",
+          },
+          {
+            id: "1",
+            text: "Straight to the pickup point — no time!",
+            place: { id: "viewpoint" },
+            distanceThreshold: 100,
+            nextStepId: "4",
+          },
+        ],
+      },
+      {
+        id: "1",
+        title: "The makeover",
+        text: `The hairdresser looks at Zlorp for a long moment.\n\n"Sit," she says.\n\nForty minutes later Zlorp has a magnificent wig, a scarf hiding the third eye, and enormous sunglasses. It looks like a retired rock star. It is *thrilled*.\n\n"I am incognito," Zlorp whispers, at considerable volume.`,
+        inventoryModification: {
+          disguise: { operation: InventoryOperation.ADD, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "Zlorp wants to try 'human fuel' before leaving",
+            place: { id: "fastFood" },
+            nextStepId: "2",
+          },
+          {
+            id: "1",
+            text: "Head for the pickup point",
+            place: { id: "viewpoint" },
+            distanceThreshold: 100,
+            nextStepId: "3",
+          },
+        ],
+      },
+      {
+        id: "2",
+        title: "Human fuel",
+        text: `Zlorp orders "one of everything, please" and pays with a coin that is definitely gold and possibly currency somewhere.\n\nIt tries a fry. All three eyes widen.\n\n"YOUR PLANET HAS BEEN HIDING THIS," it booms. Several customers turn around. The disguise holds — they conclude he's a musician.\n\nZlorp pockets a portion of fries "for the journey".`,
+        inventoryModification: {
+          fries: { operation: InventoryOperation.ADD, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "Dusk is coming — to the viewpoint!",
+            place: { id: "viewpoint" },
+            distanceThreshold: 100,
+            nextStepId: "3",
+          },
+        ],
+      },
+      {
+        id: "3",
+        title: "Dusk",
+        text: `You reach the viewpoint as the sky turns orange. Zlorp removes the wig with ceremony and hands it back to you.\n\n"For your collection," it says solemnly.\n\nA soft hum. A light in the sky that the town will spend weeks explaining as 'a drone'.`,
+        choices: [
+          {
+            id: "0",
+            text: "Wave goodbye",
+            inventoryCheck: {
+              fries: {
+                operator: ComparisonOperator.GREATER_THAN_OR_EQUAL,
+                value: 1,
+              },
+            },
+            nextStepId: "5",
+          },
+          {
+            id: "1",
+            text: "Wave goodbye",
+            inventoryCheck: {
+              fries: {
+                operator: ComparisonOperator.LESS_THAN,
+                value: 1,
+              },
+            },
+            nextStepId: "6",
+          },
+        ],
+      },
+      {
+        id: "4",
+        title: "A scene",
+        text: `You hurry a seven-foot teal alien through town in broad daylight.\n\nIt goes about as well as you'd expect. Three phones are pointed at you. A dog refuses to stop howling. Someone asks for an autograph *just in case*.\n\nBy the time you reach the viewpoint, Zlorp is trending locally.\n\n"I have caused a scene," Zlorp says sadly. The vessel arrives early, presumably to limit the damage.\n\n"Next time," Zlorp calls down from the light, "we do the disguise first!"\n\n**FIRST CONTACT: BLURRY BUT VIRAL.**`,
+        choices: [],
+      },
+      {
+        id: "5",
+        title: "The exchange program",
+        text: `The light swallows Zlorp — and pauses.\n\nA moment later, a single fry drifts back down, encased in a small crystal block, like an artifact.\n\nAn engraving on the base reads: **SPECIMEN 1. EXQUISITE. THANK YOU.**\n\nSomewhere out there, an entire civilisation is about to discover fries. You feel you've done something important today.\n\n**AMBASSADOR OF POTATO.**`,
+        choices: [],
+      },
+      {
+        id: "6",
+        title: "Safe travels",
+        text: `The light lifts Zlorp gently into the evening sky. The last thing you see is a wig-less teal head and three eyes, all winking — which takes coordination.\n\nOn the bench, Zlorp has left the gold coin and a note in surprisingly neat handwriting:\n\n> *"For bus fare, in case you also miss one someday."*\n\n**SAFE TRAVELS, ZLORP.**`,
+        choices: [],
+      },
+    ],
+  },
+  {
+    id: "8",
+    title: "The Vanished Masterpiece",
+    description: "A painting is missing from the museum and everyone is lying",
+    customStyles: {
+      "font-family": "'Palatino Linotype', 'Book Antiqua', serif",
+      color: "#e8dcc8",
+      "background-color": "#26201a",
+      padding: "12px",
+      "border-radius": "12px",
+    },
+    places: [
+      {
+        id: "museum",
+        name: "The museum",
+        osmQuery: places.museum,
+      },
+      {
+        id: "artwork",
+        name: "The artwork",
+        osmQuery: places.artwork,
+        closeTo: "museum",
+      },
+      {
+        id: "theatre",
+        name: "The theatre",
+        osmQuery: places.theatre,
+        closeTo: "museum",
+      },
+      {
+        id: "cafe",
+        name: "The cafe",
+        osmQuery: places.cafe,
+        closeTo: "theatre",
+      },
+    ],
+    steps: [
+      {
+        id: "0",
+        title: "The empty frame",
+        text: `# One frame. No painting.\n\nThe museum called *you* because the police laughed at them.\n\nOvernight, "Girl with a Pear" vanished from its frame. No alarms. No broken glass. Just a small card left on the floor:\n\n> *"She deserved better light."*\n\nThe curator wrings his hands. "Find her before the gala on Friday."`,
+        choices: [
+          {
+            id: "0",
+            text: "Examine the empty frame",
+            place: { id: "museum" },
+            nextStepId: "1",
+          },
+        ],
+      },
+      {
+        id: "1",
+        title: "The scene",
+        text: `Up close, the frame tells a story: the canvas wasn't cut out — it was *unmounted*, carefully, by someone with the right tools and all the time in the world.\n\nTwo things catch your eye:\n\n- flecks of **fresh mural paint** on the floor — the outdoor kind\n- a torn **theatre ticket stub** behind the pedestal\n\nTwo leads. A proper detective checks both before pointing any fingers.`,
+        choices: [
+          {
+            id: "0",
+            text: "Follow the paint — to the mural",
+            place: { id: "artwork" },
+            nextStepId: "2",
+          },
+          {
+            id: "1",
+            text: "Follow the stub — to the theatre",
+            place: { id: "theatre" },
+            nextStepId: "3",
+          },
+          {
+            id: "2",
+            text: "Accuse the curator right now, dramatically",
+            nextStepId: "7",
+          },
+        ],
+      },
+      {
+        id: "2",
+        title: "The mural",
+        text: `The mural is enormous, luminous — and signed with a flourish: **VESNA**.\n\nA passer-by tells you Vesna used to restore paintings at the museum before she "got tired of basements" and took up walls.\n\nYou look closer at the mural. In the corner, small but unmistakable, there's a girl holding a pear. Painted with *love*, from memory.\n\nThat's not evidence of theft. That's evidence of *devotion*. Interesting.`,
+        inventoryModification: {
+          clues: { operation: InventoryOperation.ADD, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "Check the other lead — the theatre",
+            place: { id: "theatre" },
+            nextStepId: "3",
+          },
+          {
+            id: "1",
+            text: "You've seen enough — end this at the cafe",
+            place: { id: "cafe" },
+            nextStepId: "4",
+          },
+        ],
+      },
+      {
+        id: "3",
+        title: "The theatre",
+        text: `The stage manager squints at the stub. "Last Tuesday. Closing night of *The Forger's Daughter*. Vesna was here — she practically lives in seat 4B when she's not painting."\n\nOn stage, the set is still up: a fake gallery, fake frames — and stage lights. *Warm* ones.\n\n"She kept saying the museum lit their best piece like a dentist's office," the manager shrugs. "Asked to borrow two of our lamps on Wednesday. Said it was for… an installation."`,
+        inventoryModification: {
+          clues: { operation: InventoryOperation.ADD, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "Check the other lead — the mural",
+            place: { id: "artwork" },
+            nextStepId: "2",
+          },
+          {
+            id: "1",
+            text: "Time to find Vesna — the cafe",
+            place: { id: "cafe" },
+            nextStepId: "4",
+          },
+        ],
+      },
+      {
+        id: "4",
+        title: "Seat by the window",
+        text: `She's exactly where a person like her would be: corner table, paint under her fingernails, defiantly unbothered.\n\nBehind her, on the cafe wall, hangs "Girl with a Pear" — bathed in warm, golden, *perfect* light. Half the cafe is sketching her.\n\n"Took you long enough," Vesna says, and pushes out a chair.`,
+        choices: [
+          {
+            id: "0",
+            text: "Lay out the whole story, clue by clue",
+            inventoryCheck: {
+              clues: {
+                operator: ComparisonOperator.GREATER_THAN_OR_EQUAL,
+                value: 2,
+              },
+            },
+            nextStepId: "5",
+          },
+          {
+            id: "1",
+            text: "Bluff — you only have half the story",
+            inventoryCheck: {
+              clues: {
+                operator: ComparisonOperator.LESS_THAN,
+                value: 2,
+              },
+            },
+            nextStepId: "6",
+          },
+        ],
+      },
+      {
+        id: "5",
+        title: "Case closed, properly",
+        text: `You lay it out: the restorer's careful hands, the borrowed stage lamps, the girl with the pear painted into the mural like a signature.\n\nVesna listens all the way through, then grins. "Finally. Someone who *looks* at things."\n\nThe deal you broker is now museum legend: the painting goes back — but into a new room, lit by two theatre lamps, designed by Vesna. The plaque reads *"Lighting: anonymous"*, and everyone knows.\n\n**CASE CLOSED. LIGHTING: IMPECCABLE.**`,
+        choices: [],
+      },
+      {
+        id: "6",
+        title: "The half-bluff",
+        text: `You improvise. You gesture. You say "the evidence clearly shows" twice.\n\nVesna lets you flounder for a full minute before sliding her sketchbook across the table — inside: the whole plan, dated, annotated, *illustrated*.\n\n"You were fifty percent right," she says, "which is a failing grade in detective work. Coffee's on you."\n\nThe painting goes back on Friday anyway. She was always going to return it. You pay for the coffee.\n\n**CASE SOLVED. MOSTLY BY THE CULPRIT.**`,
+        choices: [],
+      },
+      {
+        id: "7",
+        title: "The wrong finger",
+        text: `"It was YOU!" you announce, pointing at the curator.\n\nA silence. The curator blinks. "I *called* you," he says. "I gave you *tea*."\n\nOver his shoulder, through the window, you notice a cafe across the square with a suspiciously warm glow and a suspiciously large crowd of people sketching.\n\nBy the time you get there, there's a note taped to the empty wall:\n\n> *"Better luck next time, detective. — V."*\n\n**THE PAINTING RETURNED ON FRIDAY. YOUR PRIDE DID NOT.**`,
+        choices: [],
+      },
+    ],
+  },
 ];
 
 export function generateRandomAdventures(
