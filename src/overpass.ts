@@ -27,14 +27,9 @@ export class OverpassError extends Error {
 
 // Public Overpass instances, tried in order until one answers.
 // See https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances
-// As of mid-2026 the overpass-api.de pool is the only reliable full-planet
-// public instance; it allows ~2 request slots per IP, so requests are queued
-// (see MAX_CONCURRENT) and busy responses are retried with a delay.
-// (overpass.kumi.systems was handed over to private.coffee and rarely
-// responds, so it gets a short timeout and serves only as a last resort.)
 const ENDPOINTS: { url: string; timeoutMs: number }[] = [
+  { url: "https://maps.mail.ru/osm/tools/overpass/api/interpreter", timeoutMs: 20_000 },
   { url: "https://overpass-api.de/api/interpreter", timeoutMs: 20_000 },
-  { url: "https://lz4.overpass-api.de/api/interpreter", timeoutMs: 20_000 },
   { url: "https://overpass.private.coffee/api/interpreter", timeoutMs: 8_000 },
 ];
 
