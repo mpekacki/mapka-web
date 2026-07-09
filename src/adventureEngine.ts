@@ -70,10 +70,12 @@ interface InventoryCheck {
 export const startAdventure = async (
   adventure: AdventureDefinition,
   initialLatitude: number,
-  initialLongitude: number
+  initialLongitude: number,
+  onProgress?: (done: number, total: number) => void
 ): Promise<Adventure> => {
   const firstStep = adventure.steps[0];
   const placeIdToMarker: { [placeId: string]: Marker } = {};
+  onProgress?.(0, adventure.places.length);
   while (Object.keys(placeIdToMarker).length < adventure.places.length) {
     const places = adventure.places.filter(
       (p) =>
@@ -107,6 +109,10 @@ export const startAdventure = async (
           visible: true,
         };
         placeIdToMarker[place.id] = marker;
+        onProgress?.(
+          Object.keys(placeIdToMarker).length,
+          adventure.places.length
+        );
       })
     );
   }

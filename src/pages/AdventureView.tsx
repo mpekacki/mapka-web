@@ -14,6 +14,7 @@ import {
   selectIsManualLocation,
   getAdventure,
   isAdventureLoading,
+  selectAdventureLoadingProgress,
 } from '../features/adventuresSlice';
 import { ArrowLeftIcon, RefreshIcon, LocateIcon } from '../components/icons';
 
@@ -24,6 +25,9 @@ function AdventureView() {
   const playerPosition = useAppSelector(selectPlayerPosition);
   const [alreadyStarted, setAlreadyStarted] = useState(false);
   const isLoading = useAppSelector(isAdventureLoading(adventureId));
+  const loadingProgress = useAppSelector(
+    selectAdventureLoadingProgress(adventureId)
+  );
   const adventure = useAppSelector(getAdventure(adventureId));
   const isManualLocation = useAppSelector(selectIsManualLocation);
 
@@ -85,6 +89,29 @@ function AdventureView() {
           <div className="loading-overlay">
             <div className="spinner" />
             <p>Loading adventure...</p>
+            {loadingProgress && loadingProgress.total > 0 && (
+              <>
+                <div
+                  className="progress-bar"
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={loadingProgress.total}
+                  aria-valuenow={loadingProgress.done}
+                >
+                  <div
+                    className="progress-bar-fill"
+                    style={{
+                      width: `${
+                        (loadingProgress.done / loadingProgress.total) * 100
+                      }%`,
+                    }}
+                  />
+                </div>
+                <p className="progress-label">
+                  {loadingProgress.done} / {loadingProgress.total} places found
+                </p>
+              </>
+            )}
           </div>
         )}
       </main>

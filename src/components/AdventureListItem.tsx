@@ -5,6 +5,7 @@ import { useAppSelector } from '../hooks';
 import {
   isAlreadyStarted,
   isAdventureLoading,
+  selectAdventureLoadingProgress,
 } from '../features/adventuresSlice';
 
 interface AdventureListItemProps {
@@ -26,6 +27,9 @@ const AdventureListItem = ({
 }: AdventureListItemProps) => {
   const isStarted = useAppSelector(isAlreadyStarted(adventureId));
   const isLoading = useAppSelector(isAdventureLoading(adventureId));
+  const loadingProgress = useAppSelector(
+    selectAdventureLoadingProgress(adventureId)
+  );
 
   return (
     <Link
@@ -57,7 +61,14 @@ const AdventureListItem = ({
         </p>
       </div>
       {isLoading ? (
-        <div className="spinner" />
+        <div className="loading-progress">
+          {loadingProgress && loadingProgress.total > 0 && (
+            <span className="progress-label">
+              {loadingProgress.done}/{loadingProgress.total}
+            </span>
+          )}
+          <div className="spinner" />
+        </div>
       ) : (
         <span className="chevron">
           <ChevronRightIcon />

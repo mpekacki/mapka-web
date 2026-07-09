@@ -31,6 +31,7 @@ export const store = configureStore({
           ...persisted,
           availableAdventures: mergedAvailableAdventures,
           loadingAdventures: [],
+          loadingProgress: {},
         }
       : defaultAdventuresState,
   },

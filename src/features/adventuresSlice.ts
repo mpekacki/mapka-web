@@ -22,6 +22,12 @@ export interface AdventuresState {
   shouldFitBounds: boolean;
   isManualLocation: boolean;
   loadingAdventures: string[];
+  loadingProgress: { [adventureId: string]: LoadingProgress };
+}
+
+export interface LoadingProgress {
+  done: number;
+  total: number;
 }
 
 export interface Adventure {
@@ -81,6 +87,7 @@ export const defaultAdventuresState: AdventuresState = {
   shouldFitBounds: false,
   isManualLocation: false,
   loadingAdventures: [],
+  loadingProgress: {},
 };
 
 export const adventuresSlice = createSlice({
@@ -151,6 +158,14 @@ export const adventuresSlice = createSlice({
       state.loadingAdventures = state.loadingAdventures.filter(
         (id) => id !== action.payload
       );
+      delete state.loadingProgress[action.payload];
+    },
+    setAdventureLoadingProgress: (
+      state,
+      action: PayloadAction<{ adventureId: string; progress: LoadingProgress }>
+    ) => {
+      state.loadingProgress[action.payload.adventureId] =
+        action.payload.progress;
     },
   },
 });
@@ -195,7 +210,14 @@ export const thunkStartAdventures =
         const adventure = await startAdventure(
           adventureDefinition,
           playerPosition.latitude,
-          playerPosition.longitude
+          playerPosition.longitude,
+          (done, total) =>
+            dispatch(
+              setAdventureLoadingProgress({
+                adventureId,
+                progress: { done, total },
+              })
+            )
         );
         dispatch(
           adventureStarted({
@@ -283,6 +305,7 @@ export const {
   setInventory,
   setAdventureAsLoading,
   removeAdventureAsLoading,
+  setAdventureLoadingProgress,
 } = adventuresSlice.actions;
 
 export const selectPlayerPosition = (state: RootState) =>
@@ -326,6 +349,14 @@ export const isAdventureLoading = (
 ): ((state: RootState) => boolean) => {
   return (state: RootState) => {
     return state.adventures.loadingAdventures.includes(adventureId);
+  };
+};
+
+export const selectAdventureLoadingProgress = (
+  adventureId: string
+): ((state: RootState) => LoadingProgress | null) => {
+  return (state: RootState) => {
+    return state.adventures.loadingProgress[adventureId] ?? null;
   };
 };
 
