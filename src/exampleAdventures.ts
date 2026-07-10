@@ -60,12 +60,14 @@ const loremIpsum =
 export const ADVENTURES: AdventureDefinition[] = [
   {
     id: "0",
-    title: "Talking statue",
-    description: "An unhappy statue comes to life",
+    title: "The Talking Statue",
+    description: "130 years on a plinth, and the statue has some requests",
     customStyles: {
-      'font-family': 'Courier New',
-      'color': 'lime',
-      'background-color': 'black'
+      "font-family": "'Courier New', monospace",
+      color: "lime",
+      "background-color": "black",
+      padding: "12px",
+      "border-radius": "12px",
     },
     places: [
       {
@@ -89,8 +91,8 @@ export const ADVENTURES: AdventureDefinition[] = [
     steps: [
       {
         id: "0",
-        title: "Step 1",
-        text: `# The *statue* is calling you\n\nAll night you dreamt of a stone voice whispering your name. When you woke up, you somehow knew exactly where it was coming from.\n\nYou should go.`,
+        title: "The whisper",
+        text: `# The *statue* is calling you\n\nAll night you dreamt of a stone voice whispering your name — patiently, formally, like it had been rehearsing for a century.\n\nWhen you woke up, you somehow knew exactly which statue it was coming from.\n\nYou should go. It seems rude not to.`,
         choices: [
           {
             id: "0",
@@ -102,8 +104,8 @@ export const ADVENTURES: AdventureDefinition[] = [
       },
       {
         id: "1",
-        title: "Step 2",
-        text: "The statue says 'Bring me something to drink from that store!'",
+        title: "It talks",
+        text: `As you approach, the statue's head turns with a sound like a millstone.\n\n"FINALLY," it booms. "One hundred and thirty years on this plinth. Rain. Pigeons. *Ceremonial wreaths*. And in all that time, do you know how many people have asked whether I am **thirsty**?"\n\nA grinding pause.\n\n"None. There is a store nearby. Bring me something cold and fizzy. And none of that *diet* nonsense — I am made of bronze, not willpower."`,
         choices: [
           {
             id: "0",
@@ -113,74 +115,108 @@ export const ADVENTURES: AdventureDefinition[] = [
           },
           {
             id: "1",
-            text: "Refuse",
+            text: "Refuse. You don't run errands for furniture.",
             nextStepId: "5",
-            place: { id: "statue" },
           },
         ],
       },
       {
         id: "2",
-        title: "Step 3",
-        text: "You buy the drink",
-        inventoryModification: {
-          drink: {
-            operation: InventoryOperation.ADD,
-            value: 1,
-          },
-        },
+        title: "The beverage aisle",
+        text: `The drinks fridge hums at you. Two candidates stand out:\n\n- **Sparkling lemonade** — a dignified classic, suitable for a decorated public monument\n- **VOLTAGE⚡** — an energy drink whose ingredients list mentions caffeine *three separate times*\n\nThe statue said "cold and fizzy". It did not specify further.\n\nThis feels like a lot of responsibility.`,
         choices: [
           {
             id: "0",
-            text: "Go back to the statue",
-            nextStepId: "3",
-            place: { id: "statue" },
-            inventoryCheck: {
-              drink: {
-                operator: ComparisonOperator.GREATER_THAN_OR_EQUAL,
-                value: 1,
-              },
-            },
+            text: "Buy the sparkling lemonade",
             inventoryModification: {
-              drink: {
-                operation: InventoryOperation.ADD,
-                value: -1,
-              },
+              lemonade: { operation: InventoryOperation.ADD, value: 1 },
             },
+            nextStepId: "3",
+          },
+          {
+            id: "1",
+            text: "Buy the VOLTAGE⚡",
+            inventoryModification: {
+              voltage: { operation: InventoryOperation.ADD, value: 1 },
+            },
+            nextStepId: "3",
           },
         ],
       },
       {
         id: "3",
-        title: "Step 4",
-        text: "'Thank you', the statue says. 'Now I need to get some sleep. Go find me a hotel.'",
+        title: "Back at the plinth",
+        text: `The statue watches you return with the fixed intensity of something that has nothing else on its calendar.\n\n"Well?" it rumbles, extending an enormous bronze hand.`,
         choices: [
           {
             id: "0",
-            text: "Go to the hotel",
+            text: "Hand over the lemonade",
+            place: { id: "statue" },
+            inventoryCheck: {
+              lemonade: {
+                operator: ComparisonOperator.GREATER_THAN_OR_EQUAL,
+                value: 1,
+              },
+            },
+            inventoryModification: {
+              lemonade: { operation: InventoryOperation.ADD, value: -1 },
+            },
             nextStepId: "4",
-            place: { id: "hotel" },
+          },
+          {
+            id: "1",
+            text: "Hand over the VOLTAGE⚡",
+            place: { id: "statue" },
+            inventoryCheck: {
+              voltage: {
+                operator: ComparisonOperator.GREATER_THAN_OR_EQUAL,
+                value: 1,
+              },
+            },
+            inventoryModification: {
+              voltage: { operation: InventoryOperation.ADD, value: -1 },
+            },
+            nextStepId: "7",
           },
         ],
       },
       {
         id: "4",
-        title: "Step 5",
-        text: "You book the hotel for the statue",
-        choices: [],
+        title: "A long sigh",
+        text: `The statue drinks the entire bottle in one slow, ceremonial motion, then exhales a sigh that rattles nearby windows.\n\n"*Magnificent.*"\n\nIt looks almost peaceful now. Almost.\n\n"One more thing. In one hundred and thirty years I have not once **lain down**. There is a hotel not far from here. Book me a room. A large one. Ground floor — for structural reasons."`,
+        choices: [
+          {
+            id: "0",
+            text: "Go to the hotel",
+            nextStepId: "6",
+            place: { id: "hotel" },
+          },
+        ],
       },
       {
         id: "5",
-        title: "Step 6",
-        text: "The statue attacks you and kills you on the spot!",
+        title: "Judged",
+        text: `"I see," says the statue.\n\nIts face settles back into stone, arranging itself — deliberately, joint by grinding joint — into an expression of profound disappointment.\n\nNothing else happens. That's the worst part.\n\nExcept: every time you cross this square now, the head is turned *just slightly* toward you. And you could swear the plaque has gained a line:\n\n> *"…and was refused a beverage."*\n\n**JUDGED FOR ETERNITY.**`,
+        choices: [],
+      },
+      {
+        id: "6",
+        title: "Checked in",
+        text: `The receptionist takes in the seven-foot bronze general looming behind you and doesn't even blink.\n\n"Ground floor?" she asks.\n\n"For structural reasons," you and the statue say in unison.\n\nThe statue tiptoes down the corridor — each tiptoe a small earthquake — and pauses at the door of room 4.\n\n"Thank you," it says quietly, without any boom at all. "Same time next century?"\n\nBy morning, the statue is back on its plinth. But if you look closely, it's now depicted mid-stretch. And it is *definitely* smiling.\n\n**THE STATUE SLEEPS.**`,
+        choices: [],
+      },
+      {
+        id: "7",
+        title: "VOLTAGE⚡",
+        text: `The statue drains the can in one go.\n\nFor three full seconds, nothing happens.\n\nThen its eyes light up — *literally*, which you were not expecting — and it steps off the plinth with a crash.\n\n"I FEEL **INCREDIBLE**," it announces, and sets off around the town at a dead sprint, sword raised heroically against no one in particular.\n\nYou spend the night following the sound of distant, rhythmic thunder and apologising to startled dog-walkers.\n\nAt dawn the statue is back on its plinth — posed mid-jog, one knee raised, grinning. Historians will publish four contradictory papers about it.\n\n**NEVER GIVE A STATUE AN ENERGY DRINK.**`,
         choices: [],
       },
     ],
   },
   {
     id: "1",
-    title: "The park",
-    description: "Just a walk",
+    title: "A Walk in the Park",
+    description: "You just wanted some air. The duck had other plans.",
     places: [
       {
         id: "park",
@@ -203,12 +239,12 @@ export const ADVENTURES: AdventureDefinition[] = [
     steps: [
       {
         id: "0",
-        title: "Step 1",
-        text: "You decide to have a walk in the park",
+        title: "Just a walk",
+        text: `# Sunday, finally\n\nNo plans. No errands. Nothing but fresh air, a nice bench, and absolutely no surprises.\n\nThat's the idea, anyway.`,
         choices: [
           {
             id: "0",
-            text: "Go to the park",
+            text: "Go for a walk in the park",
             place: { id: "park" },
             nextStepId: "1",
           },
@@ -216,34 +252,115 @@ export const ADVENTURES: AdventureDefinition[] = [
       },
       {
         id: "1",
-        title: "Step 2",
-        text: "You go to the store",
+        title: "The duck",
+        text: `You've barely picked out a bench when you hear it: a person by the pond, in visible distress.\n\n"My RING! It took my— the duck took my *ring*!"\n\nAnd there it is. Three meters out on the water, a duck floats in serene triumph, something gold glinting in its beak. It is maintaining direct eye contact with everyone on shore at once, which shouldn't be possible.\n\n"I set it down for ONE second," the person whispers. "I was going to *propose* today."`,
         choices: [
           {
             id: "0",
-            text: "Go to the store",
-            nextStepId: "2",
+            text: "Negotiate. Ducks love snacks — to the store!",
             place: { id: "store" },
+            nextStepId: "2",
+          },
+          {
+            id: "1",
+            text: "Lunge at the duck",
+            nextStepId: "6",
+          },
+        ],
+      },
+      {
+        id: "6",
+        title: "The lunge",
+        text: `The duck watches you wade in. The duck lets you get *almost* close enough. The duck paddles exactly one meter further out.\n\nYou are now standing waist-deep in a pond, fully clothed, while a duck holds an engagement ring and what can only be described as the moral high ground.\n\nSomewhere on the shore, someone applauds. Sarcastically.`,
+        inventoryModification: {
+          soaked: { operation: InventoryOperation.ADD, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "Squelch to the store. Plan B: snacks.",
+            place: { id: "store" },
+            nextStepId: "2",
           },
         ],
       },
       {
         id: "2",
-        title: "Step 3",
-        text: "You leave the store",
+        title: "The snack aisle",
+        text: `"Bread?" The store clerk looks personally offended. "Bread is *terrible* for ducks. Everyone knows this. Well — everyone who works within two hundred meters of that pond."\n\nHe slides a bag of **frozen peas** across the counter with the gravity of a man handing over specialist equipment.\n\n"Peas. Trust me. That duck and I have history."`,
+        inventoryModification: {
+          peas: { operation: InventoryOperation.ADD, value: 1 },
+        },
         choices: [
           {
             id: "0",
-            text: "Go to the cafe",
+            text: "Back to the pond, armed with peas",
+            place: { id: "park" },
+            inventoryCheck: {
+              peas: {
+                operator: ComparisonOperator.GREATER_THAN_OR_EQUAL,
+                value: 1,
+              },
+            },
+            inventoryModification: {
+              peas: { operation: InventoryOperation.ADD, value: -1 },
+            },
             nextStepId: "3",
-            place: { id: "cafe" },
           },
         ],
       },
       {
         id: "3",
-        title: "Step 4",
-        text: "You leave the cafe",
+        title: "The trade",
+        text: `You scatter a handful of peas on the bank and step back, like a professional.\n\nThe duck deliberates. The duck looks at the ring. The duck looks at the peas. Entire civilisations rise and fall.\n\nThen — with the weary dignity of a customs officer — it paddles over, sets the ring down on the grass, and begins to eat.\n\nInstant pandemonium: every duck on the pond descends on the peas. In the chaos, you grab the ring.\n\nThe would-be proposer clutches it, then you, then the ring again. "You saved— I can't— *let me buy you a coffee*. Please. I insist. My hands are still shaking."`,
+        inventoryModification: {
+          ring: { operation: InventoryOperation.ADD, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "Accept the coffee",
+            place: { id: "cafe" },
+            inventoryCheck: {
+              soaked: { operator: ComparisonOperator.LESS_THAN, value: 1 },
+            },
+            nextStepId: "4",
+          },
+          {
+            id: "1",
+            text: "Accept the coffee (and drip all the way there)",
+            place: { id: "cafe" },
+            inventoryCheck: {
+              soaked: {
+                operator: ComparisonOperator.GREATER_THAN_OR_EQUAL,
+                value: 1,
+              },
+            },
+            nextStepId: "5",
+          },
+          {
+            id: "2",
+            text: "Just hand the ring back and slip away",
+            nextStepId: "7",
+          },
+        ],
+      },
+      {
+        id: "4",
+        title: "The proposal",
+        text: `Over coffee you get the whole story: the six months of planning, the speech rehearsed in the shower, the exact bench by the pond — and the one variable nobody accounted for: waterfowl.\n\nMid-sentence, the proposer stops, looks across the table at their partner — who arrived flustered and confused four minutes ago — and decides the moment is *now*.\n\nDown on one knee, between a cake display and a confused barista.\n\nThe answer is yes. The cafe erupts. You are handed someone's phone and become the official photographer of the whole thing.\n\nYears from now, the story will be told at every family gathering — the duck, the peas, and the stranger who saved the day.\n\n**YOU'RE IN THE ENGAGEMENT STORY FOREVER.**`,
+        choices: [],
+      },
+      {
+        id: "5",
+        title: "The proposal (damp version)",
+        text: `The barista takes one look at you — pond weed on your shoulder, one shoe audibly full of water — and brings a towel with the coffee, no questions asked.\n\nAnd then, mid-thank-you, the proposer looks across the table at their partner — who arrived flustered and confused four minutes ago — and goes down on one knee right there, between a cake display and your puddle.\n\nThe answer is yes. The cafe erupts. You are handed someone's phone to take photos, and you sneeze magnificently in the middle of the best one.\n\nThat's the photo they frame. Of course it is.\n\n**IN THEIR ENGAGEMENT STORY FOREVER — SLIGHTLY BLURRY, VERY DAMP.**`,
+        choices: [],
+      },
+      {
+        id: "7",
+        title: "The quiet exit",
+        text: `You press the ring into their hand, wave off the thanks, and walk on. It was supposed to be a quiet Sunday, and by some measures it still can be.\n\nBehind you, you hear the beginning of a very happy commotion by the pond.\n\nThey never got your name. The proposal happened right there on the bench after all, exactly as planned — well, *nearly* exactly.\n\nAnd the duck? Locals report that the couple now visits every Sunday to feed it peas. They named it **Hero**.\n\nIt was named after someone, they say. Nobody knows who.\n\n**SOME HEROES JUST KEEP WALKING.**`,
         choices: [],
       },
     ],
