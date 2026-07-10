@@ -1347,6 +1347,1112 @@ export const ADVENTURES: AdventureDefinition[] = [
       },
     ],
   },
+  {
+    // Longer example: revisitable hub step, ingredients collectable in any
+    // order (NOT_EQUAL gates lock each one after pickup), idempotent SET
+    // modifications on re-enterable steps, a hidden marker on the first step,
+    // custom distance thresholds, and three mutually exclusive endings.
+    id: "9",
+    title: "The Order of the Copper Kettle",
+    description: "Three ingredients, one night, and a kettle that judges you",
+    customStyles: {
+      "font-family": "Georgia, serif",
+      color: "#d8f3dc",
+      "background-color": "#081c15",
+      padding: "12px",
+      "border-radius": "12px",
+    },
+    places: [
+      {
+        id: "apothecary",
+        name: "The apothecary",
+        osmQuery: places.pharmacy,
+      },
+      {
+        id: "park",
+        name: "The park",
+        osmQuery: places.park,
+        closeTo: "apothecary",
+      },
+      {
+        id: "fountain",
+        name: "The fountain",
+        osmQuery: places.fountain,
+        closeTo: "park",
+      },
+      {
+        id: "pub",
+        name: "The pub",
+        osmQuery: places.pub,
+        closeTo: "apothecary",
+      },
+      {
+        id: "hill",
+        name: "The hill",
+        osmQuery: places.viewpoint,
+        closeTo: "apothecary",
+      },
+    ],
+    steps: [
+      {
+        id: "0",
+        title: "The summons",
+        text: `# A letter under your door\n\nThe wax seal shows a small copper kettle. Inside, in handwriting like spider legs:\n\n> *Apprentice — the Order convenes at dawn and I am DESPERATELY behind on the Elixir of Wakefulness. Come to my shop at once. Bring your walking shoes.*\n>\n> *— Master Elara*\n\nOutside your window, oddly, there is also a faint **green glow** coming from somewhere above the rooftops. Probably nothing.`,
+        choices: [
+          {
+            id: "0",
+            text: "Answer the summons",
+            place: { id: "apothecary" },
+            nextStepId: "1",
+          },
+          {
+            id: "1",
+            text: "Investigate the green glow first",
+            place: { id: "hill", hidden: true },
+            distanceThreshold: 120,
+            nextStepId: "12",
+          },
+        ],
+      },
+      {
+        id: "12",
+        title: "The green glow",
+        text: `At the top of the hill, growing out of a crack in the stone, is a plant that should not exist: a single stalk, glowing softly green, humming very quietly to itself.\n\nEvery herbal you've ever read calls this **skyroot** and every one of them adds *"(almost certainly mythical)"*.\n\nYou pick it. The humming continues in your pocket.`,
+        inventoryModification: {
+          skyroot: { operation: InventoryOperation.SET, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "Take it to Master Elara — she'll want to see this",
+            place: { id: "apothecary" },
+            nextStepId: "1",
+          },
+        ],
+      },
+      {
+        // Hub step: revisited after every ingredient, so it must carry no
+        // inventoryModification of its own.
+        id: "1",
+        title: "The copper kettle",
+        text: `The shop smells of mint and mild panic. Master Elara points at the great copper kettle without looking up.\n\n"Three ingredients. Before dawn. In any order you like:\n\n1. **Moonherb** — grows in the park, silver leaves\n2. **Living water** — from the fountain, scooped by hand\n3. **Bittercask drops** — the publican owes me a bottle\n\nOff you go. The kettle and I will be *judging your pace*."`,
+        choices: [
+          {
+            id: "0",
+            text: "Gather moonherb in the park",
+            place: { id: "park" },
+            inventoryCheck: {
+              moonherb: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            nextStepId: "2",
+          },
+          {
+            id: "1",
+            text: "Scoop living water at the fountain",
+            place: { id: "fountain" },
+            distanceThreshold: 25,
+            inventoryCheck: {
+              springwater: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            nextStepId: "5",
+          },
+          {
+            id: "2",
+            text: "Collect the bittercask drops at the pub",
+            place: { id: "pub" },
+            inventoryCheck: {
+              bittercask: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            nextStepId: "6",
+          },
+          {
+            id: "3",
+            text: "Light the burner and brew",
+            inventoryCheck: {
+              ingredients: {
+                operator: ComparisonOperator.GREATER_THAN_OR_EQUAL,
+                value: 3,
+              },
+            },
+            nextStepId: "9",
+          },
+        ],
+      },
+      {
+        id: "2",
+        title: "Two patches",
+        text: `By the path you find two patches of herbs, side by side, both looking extremely confident about being moonherb:\n\n- one with **silver leaves**\n- one with **moon-white flowers**\n\nMaster Elara's voice in your head: *"the name refers to the leaves, apprentice, it always refers to the leaves."* Or was it the flowers?`,
+        choices: [
+          {
+            id: "0",
+            text: "Pick the silver-leafed one",
+            nextStepId: "3",
+          },
+          {
+            id: "1",
+            text: "Pick the moon-white flowers",
+            nextStepId: "4",
+          },
+        ],
+      },
+      {
+        id: "3",
+        title: "Moonherb",
+        text: `The silver leaves fold politely as you pick them, like a plant that has been trained to be harvested.\n\nDefinitely moonherb. One down.`,
+        inventoryModification: {
+          moonherb: { operation: InventoryOperation.SET, value: 1 },
+          ingredients: { operation: InventoryOperation.ADD, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "Return to the apothecary",
+            place: { id: "apothecary" },
+            nextStepId: "1",
+          },
+        ],
+      },
+      {
+        id: "4",
+        title: "Not moonherb",
+        text: `The moon-white flowers turn out to be **stinging nightnettle**, a fact they communicate *immediately*.\n\nYou spend a minute hopping in a small circle, holding your hand and saying words that are not spells.\n\nThe leaves. It always refers to the leaves.`,
+        inventoryModification: {
+          nettles: { operation: InventoryOperation.ADD, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "Try the silver-leafed patch instead",
+            nextStepId: "3",
+          },
+        ],
+      },
+      {
+        id: "5",
+        title: "Living water",
+        text: `You lean over the rim and scoop the water by hand, as instructed. It is *freezing*, and — you would swear — briefly holds the shape of your cupped hands after you pour it into the flask, like it's waving goodbye.\n\nLiving water. Confirmed.`,
+        inventoryModification: {
+          springwater: { operation: InventoryOperation.SET, value: 1 },
+          ingredients: { operation: InventoryOperation.ADD, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "Return to the apothecary",
+            place: { id: "apothecary" },
+            nextStepId: "1",
+          },
+        ],
+      },
+      {
+        id: "6",
+        title: "The publican's debt",
+        text: `"Elara sent you? About time." The publican hauls a dusty bottle from under the bar, its label handwritten: **BITTERCASK — DO NOT ENJOY**.\n\n"Tell her we're square now." He slides the bottle over, then pauses.\n\n"You look like you've been running all night. One on the house?"`,
+        inventoryModification: {
+          bittercask: { operation: InventoryOperation.SET, value: 1 },
+          ingredients: { operation: InventoryOperation.ADD, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "Decline politely — the kettle is judging your pace",
+            place: { id: "apothecary" },
+            nextStepId: "1",
+          },
+          {
+            id: "1",
+            text: "Well. Just the one.",
+            nextStepId: "7",
+          },
+        ],
+      },
+      {
+        id: "7",
+        title: "Just the one",
+        text: `It is not just the one. The publican's "house special" arrives in a glass the size of a vase.\n\nYou emerge some time later feeling **warm**, **brave**, and approximately **8% less able to walk in a straight line**.\n\nThe bottle of bittercask clinks reassuringly in your bag. Mostly reassuringly.`,
+        inventoryModification: {
+          tipsy: { operation: InventoryOperation.SET, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "Wobble back to the apothecary",
+            place: { id: "apothecary" },
+            nextStepId: "1",
+          },
+        ],
+      },
+      {
+        id: "9",
+        title: "The brewing",
+        text: `The burner roars. The kettle glows copper-bright. Master Elara ties back her sleeves and looks at you properly for the first time tonight.\n\n"Moonherb. Living water. Bittercask. Well gathered, apprentice."\n\n"Now — the brewing is *yours*. The Order watches what you do next."`,
+        choices: [
+          {
+            id: "0",
+            text: "Follow the recipe, exactly as written",
+            inventoryCheck: {
+              tipsy: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+              skyroot: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            nextStepId: "10",
+          },
+          {
+            id: "1",
+            text: "Follow the recipe (why is the room spinning?)",
+            inventoryCheck: {
+              tipsy: { operator: ComparisonOperator.EQUAL, value: 1 },
+            },
+            nextStepId: "11",
+          },
+          {
+            id: "2",
+            text: "Add the humming skyroot. It clearly wants in.",
+            inventoryCheck: {
+              skyroot: { operator: ComparisonOperator.EQUAL, value: 1 },
+            },
+            nextStepId: "13",
+          },
+        ],
+      },
+      {
+        id: "10",
+        title: "The Elixir of Wakefulness",
+        text: `You measure. You stir clockwise, then counter-clockwise, then apologise to the kettle as per footnote 4.\n\nThe elixir comes out the exact gold of six a.m. sunlight. Master Elara tastes it, and her eyebrows — famously immovable — rise a full centimetre.\n\nAt dawn, the Order of the Copper Kettle votes unanimously. You are no longer an apprentice.\n\n**WELCOME TO THE ORDER.**`,
+        choices: [],
+      },
+      {
+        id: "11",
+        title: "The Potion of Unstoppable Giggling",
+        text: `You measure, roughly. You stir in a direction. You tell the kettle it's *a good kettle, yes it is*.\n\nThe result is bright pink and smells of birthday cake. Master Elara tastes it — and giggles. Then the *entire Order* tastes it, against her increasingly giggly objections.\n\nThe dawn convention of the Order of the Copper Kettle is remembered as "the fun one". You are put on probation, and also invited to every party from now on.\n\n**PROBATION, WITH HONOURS.**`,
+        choices: [],
+      },
+      {
+        id: "13",
+        title: "The Elixir of Waking Dreams",
+        text: `The moment the skyroot touches the water, the kettle stops glowing copper and starts glowing *green*. The hum becomes a chord.\n\n"Apprentice," Master Elara says very quietly, "where did you get *skyroot*."\n\nThe finished elixir doesn't just banish sleep — one sip and you dream *while awake*, politely, in the corner of your eye. The Order studies it for a decade. They name it after you.\n\n**THE MYTHICAL INGREDIENT. THE LEGENDARY BREW.**`,
+        choices: [],
+      },
+    ],
+  },
+  {
+    // Longer example: a countdown meter seeded on the first step (its
+    // inventoryModification becomes the starting inventory), travel costs on
+    // choices, optional objectives in any order, threshold-gated branches
+    // where exactly one choice is available, and four combination endings.
+    id: "10",
+    title: "The 18:40 to Everywhere",
+    description: "Your friend leaves in minutes. You're carrying her passport.",
+    customStyles: {
+      "font-family": "'Trebuchet MS', sans-serif",
+      color: "#ffd166",
+      "background-color": "#0b132b",
+      padding: "12px",
+      "border-radius": "12px",
+    },
+    places: [
+      {
+        id: "station",
+        name: "The station",
+        osmQuery: places.railwayStation,
+      },
+      {
+        id: "atm",
+        name: "The ATM",
+        osmQuery: places.atm,
+        closeTo: "station",
+      },
+      {
+        id: "fastFood",
+        name: "The fast food place",
+        osmQuery: places.fastFood,
+        closeTo: "atm",
+      },
+      {
+        id: "kiosk",
+        name: "The kiosk",
+        osmQuery: places.kiosk,
+        closeTo: "fastFood",
+      },
+    ],
+    steps: [
+      {
+        id: "0",
+        title: "The phone call",
+        text: `# 18:29\n\n"DON'T PANIC," Ola says, panicking. "The 18:40. Platform three. I got the job — the interview's tomorrow morning, in *another city*."\n\n"Great! So—"\n\n"MY PASSPORT IS AT YOUR PLACE. You have it? Tell me you have it."\n\nYou have it. You're already outside, in fact.\n\n"You're the best. Also — ALSO — I have no cash and I haven't eaten since breakfast. Whatever you can manage. Eleven minutes. GO."`,
+        inventoryModification: {
+          minutes: { operation: InventoryOperation.SET, value: 10 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "Run straight for the station — passport first, everything else never",
+            place: { id: "station" },
+            inventoryModification: {
+              minutes: { operation: InventoryOperation.ADD, value: -3 },
+            },
+            nextStepId: "6",
+          },
+          {
+            id: "1",
+            text: "Detour to the ATM for cash",
+            place: { id: "atm" },
+            inventoryModification: {
+              minutes: { operation: InventoryOperation.ADD, value: -2 },
+            },
+            nextStepId: "1",
+          },
+          {
+            id: "2",
+            text: "Detour for hot food",
+            place: { id: "fastFood" },
+            inventoryModification: {
+              minutes: { operation: InventoryOperation.ADD, value: -2 },
+            },
+            nextStepId: "2",
+          },
+          {
+            id: "3",
+            text: "The kiosk is on the way — water and chocolate count as dinner",
+            place: { id: "kiosk" },
+            inventoryModification: {
+              minutes: { operation: InventoryOperation.ADD, value: -2 },
+            },
+            nextStepId: "4",
+          },
+        ],
+      },
+      {
+        id: "1",
+        title: "The ATM",
+        text: `The ATM thinks about your card for a *geological era*, then dispenses the notes with the smug slowness of a machine that knows you're in a hurry.\n\nCash: acquired. The station clock is visible from here. It is not encouraging.`,
+        inventoryModification: {
+          cash: { operation: InventoryOperation.ADD, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "Grab hot food too",
+            place: { id: "fastFood" },
+            inventoryCheck: {
+              food: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            inventoryModification: {
+              minutes: { operation: InventoryOperation.ADD, value: -2 },
+            },
+            nextStepId: "2",
+          },
+          {
+            id: "1",
+            text: "The kiosk is closer — snacks will do",
+            place: { id: "kiosk" },
+            inventoryCheck: {
+              food: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            inventoryModification: {
+              minutes: { operation: InventoryOperation.ADD, value: -1 },
+            },
+            nextStepId: "4",
+          },
+          {
+            id: "2",
+            text: "That's enough heroics — to the station",
+            place: { id: "station" },
+            inventoryModification: {
+              minutes: { operation: InventoryOperation.ADD, value: -2 },
+            },
+            nextStepId: "6",
+          },
+        ],
+      },
+      {
+        id: "2",
+        title: "Order for… OLA?",
+        text: `You order the fastest thing on the menu "to go, GO, *go*". The cashier, a professional, reads the situation and starts the fryer before you finish the sentence.\n\nOne paper bag of hot food, radiating steam and hope.\n\nThe coffee machine gurgles at you seductively.`,
+        inventoryModification: {
+          food: { operation: InventoryOperation.ADD, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "Cash. Ola needs cash. To the ATM",
+            place: { id: "atm" },
+            inventoryCheck: {
+              cash: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            inventoryModification: {
+              minutes: { operation: InventoryOperation.ADD, value: -2 },
+            },
+            nextStepId: "1",
+          },
+          {
+            id: "1",
+            text: "One coffee for yourself. You've earned it. It's been minutes.",
+            inventoryModification: {
+              minutes: { operation: InventoryOperation.ADD, value: -1 },
+              coffee: { operation: InventoryOperation.ADD, value: 1 },
+            },
+            nextStepId: "3",
+          },
+          {
+            id: "2",
+            text: "Straight to the station",
+            place: { id: "station" },
+            inventoryModification: {
+              minutes: { operation: InventoryOperation.ADD, value: -2 },
+            },
+            nextStepId: "6",
+          },
+        ],
+      },
+      {
+        id: "3",
+        title: "Liquid priorities",
+        text: `You drink the coffee in four gulps while speed-walking, which is a skill, whatever anyone says.\n\nSomewhere, a train is being boarded. Focus.`,
+        choices: [
+          {
+            id: "0",
+            text: "Cash from the ATM — Ola's counting on you",
+            place: { id: "atm" },
+            inventoryCheck: {
+              cash: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            inventoryModification: {
+              minutes: { operation: InventoryOperation.ADD, value: -2 },
+            },
+            nextStepId: "1",
+          },
+          {
+            id: "1",
+            text: "No more stops — station!",
+            place: { id: "station" },
+            inventoryModification: {
+              minutes: { operation: InventoryOperation.ADD, value: -2 },
+            },
+            nextStepId: "6",
+          },
+        ],
+      },
+      {
+        id: "4",
+        title: "The kiosk",
+        text: `The kiosk owner assembles your order — water, two chocolate bars, a banana of questionable vintage — with the unhurried calm of a man who has never missed a train because he has never taken one.\n\n"Big trip?" he asks.\n\n"HERS," you say, already leaving.`,
+        inventoryModification: {
+          food: { operation: InventoryOperation.ADD, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "Swing past the ATM for cash",
+            place: { id: "atm" },
+            inventoryCheck: {
+              cash: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            inventoryModification: {
+              minutes: { operation: InventoryOperation.ADD, value: -1 },
+            },
+            nextStepId: "1",
+          },
+          {
+            id: "1",
+            text: "To the station, now",
+            place: { id: "station" },
+            inventoryModification: {
+              minutes: { operation: InventoryOperation.ADD, value: -2 },
+            },
+            nextStepId: "6",
+          },
+        ],
+      },
+      {
+        id: "6",
+        title: "The departure board",
+        text: `The concourse. The big board flickers:\n\n> **18:40 — ON TIME — PLATFORM 3**\n\nHow are you doing on time? Be honest.`,
+        choices: [
+          {
+            id: "0",
+            text: "Walk briskly but with dignity — you're early",
+            inventoryCheck: {
+              minutes: {
+                operator: ComparisonOperator.GREATER_THAN_OR_EQUAL,
+                value: 6,
+              },
+            },
+            nextStepId: "7",
+          },
+          {
+            id: "1",
+            text: "SPRINT. VAULT THE LUGGAGE. APOLOGISE LATER.",
+            inventoryCheck: {
+              minutes: {
+                operator: ComparisonOperator.LESS_THAN_OR_EQUAL,
+                value: 5,
+              },
+            },
+            nextStepId: "8",
+          },
+        ],
+      },
+      {
+        id: "7",
+        title: "Platform three, calmly",
+        text: `You arrive at platform three at a *walk*, like a legend. Ola is pacing by the door, spots you, and does the full arms-in-the-air touchdown celebration.\n\n"You absolute HERO. Okay — what have we got?"`,
+        choices: [
+          {
+            id: "0",
+            text: "Passport, cash, AND dinner",
+            inventoryCheck: {
+              cash: {
+                operator: ComparisonOperator.GREATER_THAN_OR_EQUAL,
+                value: 1,
+              },
+              food: {
+                operator: ComparisonOperator.GREATER_THAN_OR_EQUAL,
+                value: 1,
+              },
+            },
+            nextStepId: "9",
+          },
+          {
+            id: "1",
+            text: "Passport and cash",
+            inventoryCheck: {
+              cash: {
+                operator: ComparisonOperator.GREATER_THAN_OR_EQUAL,
+                value: 1,
+              },
+              food: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            nextStepId: "10",
+          },
+          {
+            id: "2",
+            text: "Passport and food",
+            inventoryCheck: {
+              food: {
+                operator: ComparisonOperator.GREATER_THAN_OR_EQUAL,
+                value: 1,
+              },
+              cash: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            nextStepId: "11",
+          },
+          {
+            id: "3",
+            text: "The passport. Just the passport.",
+            inventoryCheck: {
+              cash: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+              food: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            nextStepId: "12",
+          },
+        ],
+      },
+      {
+        id: "8",
+        title: "Platform three, dramatically",
+        text: `You take the stairs three at a time. The conductor's whistle is *in his mouth*. Ola is holding the train door open with one leg and arguing with it.\n\n"THERE you are! Quick — what have we got?!"`,
+        choices: [
+          {
+            id: "0",
+            text: "Passport, cash, AND dinner — shoved through the closing door",
+            inventoryCheck: {
+              cash: {
+                operator: ComparisonOperator.GREATER_THAN_OR_EQUAL,
+                value: 1,
+              },
+              food: {
+                operator: ComparisonOperator.GREATER_THAN_OR_EQUAL,
+                value: 1,
+              },
+            },
+            nextStepId: "9",
+          },
+          {
+            id: "1",
+            text: "Passport and cash",
+            inventoryCheck: {
+              cash: {
+                operator: ComparisonOperator.GREATER_THAN_OR_EQUAL,
+                value: 1,
+              },
+              food: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            nextStepId: "10",
+          },
+          {
+            id: "2",
+            text: "Passport and food",
+            inventoryCheck: {
+              food: {
+                operator: ComparisonOperator.GREATER_THAN_OR_EQUAL,
+                value: 1,
+              },
+              cash: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            nextStepId: "11",
+          },
+          {
+            id: "3",
+            text: "The passport. Just the passport.",
+            inventoryCheck: {
+              cash: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+              food: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            nextStepId: "12",
+          },
+        ],
+      },
+      {
+        id: "9",
+        title: "Full service",
+        text: `Passport into her hand, notes into her pocket, the warm bag into her arms — a flawless triple handover as the doors beep.\n\nThrough the window, as the train pulls out, Ola holds up the food bag like a trophy and mouths *"BEST. FRIEND. EVER."*\n\nAt 21:12 she texts: *"ate everything, tipped the taxi, hotel has a BATHTUB. getting this job FOR you."*\n\nShe gets the job.\n\n**FRIENDSHIP: LEGENDARY TIER.**`,
+        choices: [],
+      },
+      {
+        id: "10",
+        title: "Funded but hungry",
+        text: `Passport and cash change hands as the whistle blows.\n\n"No food? I'm going to eat a *timetable*," Ola says, boarding. "Kidding. KIDDING. You're wonderful."\n\nAt 20:40 she texts: *"dinner = overpriced train sandwich. it contained one (1) molecule of cheese. interview prep going great though 🫡"*\n\nShe gets the job anyway. The sandwich becomes a story she tells at every party.\n\n**MISSION MOSTLY ACCOMPLISHED.**`,
+        choices: [],
+      },
+      {
+        id: "11",
+        title: "Fed but broke",
+        text: `Passport and the food bag make it aboard. Cash does not, because there is none.\n\n"I'll survive," Ola declares through the window, already eating. "Card works everywhere these days!"\n\nAt 22:05 she texts: *"UPDATE: card does not work in the hotel vending machine, the taxi, or destiny. paid the taxi driver in chocolate bars. he seemed happy???"*\n\nShe gets the job. The taxi driver still tells people about the chocolate.\n\n**IMPROVISATION: 10/10.**`,
+        choices: [],
+      },
+      {
+        id: "12",
+        title: "The one essential thing",
+        text: `Just the passport — but the passport is the whole game, and you both know it.\n\n"Cash? Food? Details," Ola says, hugging you through the train door. "*This* is the thing that couldn't be fixed on the way."\n\nAt 23:30 she texts: *"survived on vending machine crackers and adrenaline. interview outfit: ready. YOU: the reason i'm here at all."*\n\nShe gets the job. You get the first postcard.\n\n**THE RIGHT PRIORITIES.**`,
+        choices: [],
+      },
+    ],
+  },
+  {
+    // Longer example: three optional scenes playable in any order, a karma
+    // meter seeded on step 0, EQUAL checks so exactly one of four endings is
+    // ever available, and declined scenes that stay open for redemption.
+    id: "11",
+    title: "The Festival of a Hundred Lanterns",
+    description: "One evening, one lantern, and three people who need a hand",
+    customStyles: {
+      "font-family": "Georgia, serif",
+      color: "#4a2c12",
+      "background-color": "#ffe8cc",
+      padding: "12px",
+      "border-radius": "12px",
+    },
+    places: [
+      {
+        id: "park",
+        name: "The festival grounds",
+        osmQuery: places.park,
+      },
+      {
+        id: "playground",
+        name: "The playground",
+        osmQuery: places.playground,
+        closeTo: "park",
+      },
+      {
+        id: "theatre",
+        name: "The theatre",
+        osmQuery: places.theatre,
+        closeTo: "park",
+      },
+      {
+        id: "busStop",
+        name: "The bus stop",
+        osmQuery: places.busStop,
+        closeTo: "park",
+      },
+      {
+        id: "fountain",
+        name: "The fountain",
+        osmQuery: places.fountain,
+        closeTo: "park",
+      },
+    ],
+    steps: [
+      {
+        id: "0",
+        title: "One paper lantern",
+        text: `# The Festival of a Hundred Lanterns\n\nOnce a year, at dusk, the whole town gathers at the fountain and releases their lanterns together. They say the sky remembers who you walked with on the way there.\n\nYou've got your one paper lantern and a whole evening. On the breeze you catch, from three directions:\n\n- a child **crying**, over by the playground\n- a guitar going *twang* in a bad way, near the theatre\n- and someone coughing in the cold at the bus stop\n\nThe ceremony starts when you get there. No rush. Or every rush. Your call.`,
+        inventoryModification: {
+          lanterns: { operation: InventoryOperation.SET, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "See about the crying child",
+            place: { id: "playground" },
+            nextStepId: "1",
+          },
+          {
+            id: "1",
+            text: "See about the sad *twang*",
+            place: { id: "theatre" },
+            nextStepId: "4",
+          },
+          {
+            id: "2",
+            text: "See about the cough at the bus stop",
+            place: { id: "busStop" },
+            nextStepId: "7",
+          },
+          {
+            id: "3",
+            text: "Head straight to the ceremony",
+            place: { id: "fountain" },
+            distanceThreshold: 25,
+            nextStepId: "10",
+          },
+        ],
+      },
+      {
+        id: "1",
+        title: "The lantern in the tree",
+        text: `A small girl points a devastated finger at the top of the climbing frame, where her paper lantern — painted with what is either a cat or a very confident rabbit — is snagged on the highest bar, flapping.\n\n"It has to fly *with everyone's*," she explains, with the crushing logic of a six-year-old. "Or it'll be lonely up there."`,
+        choices: [
+          {
+            id: "0",
+            text: "Climb up and rescue the lantern",
+            nextStepId: "2",
+          },
+          {
+            id: "1",
+            text: "It's just a lantern. The ceremony is what matters.",
+            nextStepId: "3",
+          },
+        ],
+      },
+      {
+        id: "2",
+        title: "The rescue",
+        text: `The climbing frame was designed for people half your size, a fact it communicates to your knees repeatedly. But the lantern comes free, un-torn.\n\nThe girl inspects it, then you. You pass. She ties a **red ribbon** around your wrist — "so the sky knows you helped" — and her grandmother insists you take their spare lantern.\n\n"We always bring two," the grandmother says. "In case we meet the right person."`,
+        inventoryModification: {
+          ribbon: { operation: InventoryOperation.SET, value: 1 },
+          lanterns: { operation: InventoryOperation.ADD, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "That sad *twang* near the theatre…",
+            place: { id: "theatre" },
+            inventoryCheck: {
+              melody: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            nextStepId: "4",
+          },
+          {
+            id: "1",
+            text: "That cough at the bus stop…",
+            place: { id: "busStop" },
+            inventoryCheck: {
+              blessing: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            nextStepId: "7",
+          },
+          {
+            id: "2",
+            text: "On to the ceremony",
+            place: { id: "fountain" },
+            distanceThreshold: 25,
+            nextStepId: "10",
+          },
+        ],
+      },
+      {
+        id: "3",
+        title: "Walking away",
+        text: `You walk on. Behind you the flapping gets sadder, which shouldn't be physically possible for paper.\n\nThe crying does not stop. Your feet slow down all by themselves.`,
+        inventoryModification: {
+          guilt: { operation: InventoryOperation.ADD, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "Oh, fine. FINE. Go back and climb.",
+            nextStepId: "2",
+          },
+          {
+            id: "1",
+            text: "The theatre, then",
+            place: { id: "theatre" },
+            inventoryCheck: {
+              melody: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            nextStepId: "4",
+          },
+          {
+            id: "2",
+            text: "The bus stop, then",
+            place: { id: "busStop" },
+            inventoryCheck: {
+              blessing: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            nextStepId: "7",
+          },
+          {
+            id: "3",
+            text: "Straight to the ceremony",
+            place: { id: "fountain" },
+            distanceThreshold: 25,
+            nextStepId: "10",
+          },
+        ],
+      },
+      {
+        id: "4",
+        title: "The broken string",
+        text: `Outside the theatre, a street musician is staring at his guitar the way you'd stare at a friend who just fainted. The high E string dangles, snapped.\n\n"Festival night," he says quietly. "Best earnings of the year. And the music shop closed an hour ago."\n\nHe looks at the case full of small coins. Then at the crowd streaming towards the fountain.`,
+        choices: [
+          {
+            id: "0",
+            text: "Help — between the two of you, you can rig something",
+            nextStepId: "5",
+          },
+          {
+            id: "1",
+            text: "Sad, but you can't fix a guitar string",
+            nextStepId: "6",
+          },
+        ],
+      },
+      {
+        id: "5",
+        title: "Four strings are plenty",
+        text: `You can't fix the string. What you *can* do is sit down, listen to him grumble, and say: "So play something that doesn't need it."\n\nHe blinks. Retunes. And plays the old lantern song on four strings — lower, slower, *better*. The crowd heading for the fountain slows down. Coins rain. Somebody starts singing the words.\n\nHe won't take no for an answer: his festival lantern is yours. "The melody's coming with you anyway," he says. "I heard you humming it."`,
+        inventoryModification: {
+          melody: { operation: InventoryOperation.SET, value: 1 },
+          lanterns: { operation: InventoryOperation.ADD, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "That crying at the playground…",
+            place: { id: "playground" },
+            inventoryCheck: {
+              ribbon: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            nextStepId: "1",
+          },
+          {
+            id: "1",
+            text: "That cough at the bus stop…",
+            place: { id: "busStop" },
+            inventoryCheck: {
+              blessing: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            nextStepId: "7",
+          },
+          {
+            id: "2",
+            text: "On to the ceremony",
+            place: { id: "fountain" },
+            distanceThreshold: 25,
+            nextStepId: "10",
+          },
+        ],
+      },
+      {
+        id: "6",
+        title: "Not your problem",
+        text: `You drop a coin in the case and move on. Behind you, the four remaining strings attempt the lantern song and give up halfway.\n\nThe silence where the music should be follows you down the street.`,
+        inventoryModification: {
+          guilt: { operation: InventoryOperation.ADD, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "…go back. Music matters tonight.",
+            nextStepId: "5",
+          },
+          {
+            id: "1",
+            text: "The playground, then",
+            place: { id: "playground" },
+            inventoryCheck: {
+              ribbon: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            nextStepId: "1",
+          },
+          {
+            id: "2",
+            text: "The bus stop, then",
+            place: { id: "busStop" },
+            inventoryCheck: {
+              blessing: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            nextStepId: "7",
+          },
+          {
+            id: "3",
+            text: "Straight to the ceremony",
+            place: { id: "fountain" },
+            distanceThreshold: 25,
+            nextStepId: "10",
+          },
+        ],
+      },
+      {
+        id: "7",
+        title: "The last bus that wasn't",
+        text: `An old woman sits alone at the bus stop, coat too thin for the evening, checking a paper timetable against a reality that stopped matching it years ago.\n\n"The festival bus," she explains. "It used to run. My granddaughter is at the fountain. I told her I'd *be* there. I've watched the lanterns from this bench for three years now."\n\nThe fountain is a fifteen-minute walk. Her cane says twenty-five.`,
+        choices: [
+          {
+            id: "0",
+            text: "Offer your arm — you'll walk together",
+            nextStepId: "8",
+          },
+          {
+            id: "1",
+            text: "Someone from her family should handle this",
+            nextStepId: "9",
+          },
+        ],
+      },
+      {
+        id: "8",
+        title: "The long way, together",
+        text: `You walk at her pace, which turns out to be the correct pace: slow enough to hear about sixty years of festivals, the year it rained sideways, the year the mayor's lantern caught his hat.\n\nAt the edge of the square her granddaughter spots you and *shrieks* with joy. There is hugging. You are included in the hugging, non-negotiably.\n\nThe grandmother presses her lantern into your hands. "I came to *watch*," she says. "You fly it. And take an old woman's blessing — you'll need it less than anyone I've met."`,
+        inventoryModification: {
+          blessing: { operation: InventoryOperation.SET, value: 1 },
+          lanterns: { operation: InventoryOperation.ADD, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "That crying at the playground…",
+            place: { id: "playground" },
+            inventoryCheck: {
+              ribbon: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            nextStepId: "1",
+          },
+          {
+            id: "1",
+            text: "That sad *twang* near the theatre…",
+            place: { id: "theatre" },
+            inventoryCheck: {
+              melody: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            nextStepId: "4",
+          },
+          {
+            id: "2",
+            text: "You're basically at the fountain — ceremony time",
+            place: { id: "fountain" },
+            distanceThreshold: 25,
+            nextStepId: "10",
+          },
+        ],
+      },
+      {
+        id: "9",
+        title: "Someone else's job",
+        text: `"Of course," she says, in the tone of someone who has heard *of course* before. She folds the timetable along its worn creases and settles in to watch the sky from the bench. Again.\n\nYou make it ten steps.`,
+        inventoryModification: {
+          guilt: { operation: InventoryOperation.ADD, value: 1 },
+        },
+        choices: [
+          {
+            id: "0",
+            text: "Ten steps is as far as your conscience goes. Offer your arm.",
+            nextStepId: "8",
+          },
+          {
+            id: "1",
+            text: "The playground, then",
+            place: { id: "playground" },
+            inventoryCheck: {
+              ribbon: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            nextStepId: "1",
+          },
+          {
+            id: "2",
+            text: "The theatre, then",
+            place: { id: "theatre" },
+            inventoryCheck: {
+              melody: { operator: ComparisonOperator.NOT_EQUAL, value: 1 },
+            },
+            nextStepId: "4",
+          },
+          {
+            id: "3",
+            text: "Straight to the ceremony",
+            place: { id: "fountain" },
+            distanceThreshold: 25,
+            nextStepId: "10",
+          },
+        ],
+      },
+      {
+        id: "10",
+        title: "The ceremony",
+        text: `The square around the fountain is shoulder to shoulder, everyone cradling a small paper glow. Somewhere a count begins — *dziesięć, dziewięć, osiem…*\n\nYou look down at what you're holding.`,
+        choices: [
+          {
+            id: "0",
+            text: "Release four lanterns",
+            inventoryCheck: {
+              lanterns: { operator: ComparisonOperator.EQUAL, value: 4 },
+            },
+            nextStepId: "11",
+          },
+          {
+            id: "1",
+            text: "Release three lanterns",
+            inventoryCheck: {
+              lanterns: { operator: ComparisonOperator.EQUAL, value: 3 },
+            },
+            nextStepId: "12",
+          },
+          {
+            id: "2",
+            text: "Release two lanterns",
+            inventoryCheck: {
+              lanterns: { operator: ComparisonOperator.EQUAL, value: 2 },
+            },
+            nextStepId: "13",
+          },
+          {
+            id: "3",
+            text: "Release your one lantern",
+            inventoryCheck: {
+              lanterns: { operator: ComparisonOperator.EQUAL, value: 1 },
+            },
+            nextStepId: "14",
+          },
+        ],
+      },
+      {
+        id: "11",
+        title: "The hundredth lantern",
+        text: `Four lanterns rise from your hands — yours, the girl's spare, the musician's, the grandmother's — and they climb *together*, in a little constellation that refuses to drift apart.\n\nAround you: a red ribbon on your wrist, a melody in your ears, a blessing on your head, and three families waving at *you* across the square.\n\nThey say the sky remembers who you walked with. Tonight it has a lot to remember.\n\n**ALL ONE HUNDRED LANTERNS FLEW. FOUR WERE YOURS.**`,
+        choices: [],
+      },
+      {
+        id: "12",
+        title: "Three lights",
+        text: `Three lanterns lift off from your hands and weave upwards between the others.\n\nSomewhere in the crowd, people you helped tonight are pointing at them — *those three, those are ours*. You walked most of this evening the right way, and the sky shows it.\n\nOne voice, somewhere out there, didn't make it into the light. You'll listen better next year.\n\n**THREE LANTERNS. ALMOST THE WHOLE SONG.**`,
+        choices: [],
+      },
+      {
+        id: "13",
+        title: "Two lights",
+        text: `Two lanterns rise from your hands: your own, and one that was given to you — which is a strange, warm weight to send into the sky.\n\nIt flies differently than a bought one. Everyone nearby notices, even if nobody could say how.\n\nOn the walk home you keep thinking about the voices you walked past. The festival comes back every year. So can you.\n\n**TWO LANTERNS, ONE LESSON.**`,
+        choices: [],
+      },
+      {
+        id: "14",
+        title: "One light",
+        text: `Your single lantern joins the hundred, indistinguishable in seconds.\n\nIt's beautiful. It's genuinely beautiful. It would have been beautiful anyway.\n\nOn the way home you pass the playground, the theatre, and the bus stop — all quiet now — and the evening quietly hands you its receipt.\n\n**ONE LANTERN. NEXT YEAR: WALK SLOWER.**`,
+        choices: [],
+      },
+    ],
+  },
 ];
 
 export function generateRandomAdventures(
