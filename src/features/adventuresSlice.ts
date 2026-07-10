@@ -321,15 +321,17 @@ export const {
 export const selectPlayerPosition = (state: RootState) =>
   state.adventures.playerPosition;
 
+// the selected adventure may not be in `adventures` yet while its load is
+// still in flight, so both selectors must tolerate a missing entry
 export const selectMarkers = (state: RootState) =>
   state.adventures.selectedAdventureId
     ? state.adventures.adventures[state.adventures.selectedAdventureId]
-        .currentStep.markers
+        ?.currentStep.markers ?? []
     : [];
 
 export const selectSelectedAdventure = (state: RootState) =>
   state.adventures.selectedAdventureId
-    ? state.adventures.adventures[state.adventures.selectedAdventureId]
+    ? state.adventures.adventures[state.adventures.selectedAdventureId] ?? null
     : null;
 
 export const selectShouldFitBounds = (state: RootState) =>
