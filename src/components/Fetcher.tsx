@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { addAvailableAdventure } from '../features/adventuresSlice';
 import { useAppDispatch } from '../hooks';
 import { AdventureDefinition } from '../adventureEngine';
-import { generateRandomAdventures } from '../exampleAdventures';
 
 const Fetcher = () => {
   const [url, setUrl] = useState('');
@@ -21,13 +20,6 @@ const Fetcher = () => {
       })
       .catch((err) => console.log(err));
   };
-  const generateAdventure = () => {
-    const adventures = generateRandomAdventures(10, 3);
-    adventures.forEach((adventure) => {
-      dispatch(addAvailableAdventure(adventure));
-    });
-  };
-
   return (
     <div className="fetcher">
       {isClicked ? (
@@ -47,9 +39,6 @@ const Fetcher = () => {
           Import
         </button>
       )}
-      <button className="button" onClick={generateAdventure}>
-        Generate random
-      </button>
     </div>
   );
 };
