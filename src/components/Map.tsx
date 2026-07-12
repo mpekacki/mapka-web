@@ -7,9 +7,7 @@ import {
   Tooltip,
   useMapEvents,
 } from 'react-leaflet';
-import { Icon, LatLngBounds } from 'leaflet';
-import markerIconUrl from 'leaflet/dist/images/marker-icon.png';
-import markerIcon2xUrl from 'leaflet/dist/images/marker-icon-2x.png';
+import { divIcon, LatLngBounds } from 'leaflet';
 
 import { useEffect } from 'react';
 
@@ -82,10 +80,23 @@ const MapEvents = () => {
   return null;
 };
 
-const icon = new Icon({
-  iconUrl: markerIconUrl,
-  iconRetinaUrl: markerIcon2xUrl,
-  iconSize: [25, 41],
+const pinIcon = divIcon({
+  className: 'map-pin',
+  html: `<svg viewBox="0 0 24 30" width="30" height="38" aria-hidden="true">
+    <path d="M12 .5C6.2.5 1.5 5.2 1.5 11c0 7.4 8.8 16.1 9.7 17a1.15 1.15 0 0 0 1.6 0c.9-.9 9.7-9.6 9.7-17C22.5 5.2 17.8.5 12 .5Z" fill="var(--primary)"/>
+    <circle cx="12" cy="11" r="4.2" fill="var(--primary-contrast)"/>
+  </svg>`,
+  iconSize: [30, 38],
+  iconAnchor: [15, 37],
+  tooltipAnchor: [0, -38],
+});
+
+const playerIcon = divIcon({
+  className: 'player-marker',
+  html: '<div class="player-dot"></div>',
+  iconSize: [18, 18],
+  iconAnchor: [9, 9],
+  tooltipAnchor: [0, -12],
 });
 
 const containerStyle = {
@@ -118,7 +129,7 @@ const Map = () => {
         <Marker
           key={marker.id}
           position={[marker.latitude, marker.longitude]}
-          icon={icon}
+          icon={marker.id === 'player' ? playerIcon : pinIcon}
         >
           <Tooltip permanent={true} direction="top">
             {marker.label}

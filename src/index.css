@@ -632,6 +632,45 @@ input[type='text']::placeholder {
   padding: 0 6px;
 }
 
+/* map markers */
+
+.map-pin svg {
+  filter: drop-shadow(0 2px 3px rgba(16, 24, 40, 0.35));
+}
+
+.player-dot {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 3px solid #fff;
+  box-shadow: 0 1px 4px rgba(16, 24, 40, 0.4);
+}
+
+.player-dot::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: var(--primary);
+  opacity: 0.4;
+  animation: player-pulse 2s ease-out infinite;
+  z-index: -1;
+}
+
+@keyframes player-pulse {
+  from {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
 /* leaflet theming */
 
 .leaflet-container {
