@@ -421,6 +421,39 @@ input[type='text']::placeholder {
   color: var(--danger);
 }
 
+.geo-error-banner {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  /* above the loading/error overlay (1300) so it stays readable and
+     dismissible even while an adventure is loading or failed */
+  z-index: 1350;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 12px 10px 12px 16px;
+  background: color-mix(in srgb, var(--danger) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, var(--border));
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.geo-error-banner p {
+  margin: 0;
+  flex: 1;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.geo-error-banner .icon-button {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
 .loading-progress {
   display: flex;
   align-items: center;

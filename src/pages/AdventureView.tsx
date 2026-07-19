@@ -9,14 +9,21 @@ import { useAppDispatch, useAppSelector } from '../hooks';
 import {
   thunkStartAdventure,
   thunkLocateAndCenter,
+  thunkSetManualLocation,
   selectPlayerPosition,
-  setIsManualLocation,
   selectIsManualLocation,
+  selectGeolocationError,
+  setGeolocationError,
   getAdventure,
   isAdventureLoading,
   selectAdventureLoadingProgress,
 } from '../features/adventuresSlice';
-import { ArrowLeftIcon, RefreshIcon, LocateIcon } from '../components/icons';
+import {
+  ArrowLeftIcon,
+  RefreshIcon,
+  LocateIcon,
+  CloseIcon,
+} from '../components/icons';
 
 function AdventureView() {
   const params = useParams<{ id: string }>();
@@ -30,6 +37,7 @@ function AdventureView() {
   );
   const adventure = useAppSelector(getAdventure(adventureId));
   const isManualLocation = useAppSelector(selectIsManualLocation);
+  const geolocationError = useAppSelector(selectGeolocationError);
 
   useEffect(() => {
     if (playerPosition && !alreadyStarted) {
@@ -61,7 +69,9 @@ function AdventureView() {
               type="checkbox"
               className="toggle"
               checked={isManualLocation}
-              onChange={(e) => dispatch(setIsManualLocation(e.target.checked))}
+              onChange={(e) =>
+                dispatch(thunkSetManualLocation(e.target.checked))
+              }
             />
           </label>
           <button
@@ -82,6 +92,18 @@ function AdventureView() {
       </header>
       <main className="map-area">
         <Map />
+        {geolocationError && (
+          <div className="geo-error-banner" role="alert">
+            <p>{geolocationError}</p>
+            <button
+              className="icon-button"
+              aria-label="Dismiss"
+              onClick={() => dispatch(setGeolocationError(null))}
+            >
+              <CloseIcon size={16} />
+            </button>
+          </div>
+        )}
         <BottomSheet snapPoints={[0.12, 0.24, 0.45, 0.92]} initialSnap={1}>
           <GamePrompt />
         </BottomSheet>

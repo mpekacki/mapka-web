@@ -22,6 +22,11 @@ export interface AdventuresState {
   selectedAdventureId: string | null;
   shouldFitBounds: boolean;
   isManualLocation: boolean;
+  // false while manual location is only on as the first-launch default;
+  // once true, a geolocation fix no longer switches manual mode off
+  hasUserToggledManualLocation: boolean;
+  // user-facing message shown when a geolocation request fails
+  geolocationError: string | null;
   loadingAdventures: string[];
   loadingProgress: { [adventureId: string]: LoadingProgress };
 }
@@ -82,13 +87,20 @@ interface PlayerPosition {
   longitude: number;
 }
 
+export const DOWNTOWN_LONDON: PlayerPosition = {
+  latitude: 51.5074,
+  longitude: -0.1278,
+};
+
 export const defaultAdventuresState: AdventuresState = {
   availableAdventures: [...ADVENTURES],
   adventures: {},
   selectedAdventureId: null,
-  playerPosition: null,
+  playerPosition: DOWNTOWN_LONDON,
   shouldFitBounds: false,
-  isManualLocation: false,
+  isManualLocation: true,
+  hasUserToggledManualLocation: false,
+  geolocationError: null,
   loadingAdventures: [],
   loadingProgress: {},
 };
@@ -131,6 +143,12 @@ export const adventuresSlice = createSlice({
       }
     },
     setPlayerPosition: (state, action: PayloadAction<PlayerPosition>) => {
+      // a real geolocation fix while manual mode is only on as the
+      // first-launch default means the user granted permission — switch
+      // to the real location
+      if (state.isManualLocation && !state.hasUserToggledManualLocation) {
+        state.isManualLocation = false;
+      }
       if (!state.isManualLocation) {
         state.playerPosition = action.payload;
       }
@@ -146,6 +164,10 @@ export const adventuresSlice = createSlice({
     },
     setIsManualLocation: (state, action: PayloadAction<boolean>) => {
       state.isManualLocation = action.payload;
+      state.hasUserToggledManualLocation = true;
+    },
+    setGeolocationError: (state, action: PayloadAction<string | null>) => {
+      state.geolocationError = action.payload;
     },
     setInventory: (
       state,
@@ -289,6 +311,42 @@ export const thunkMakeChoice =
     dispatch(setInventory({ inventory: newInventory, adventureId }));
   };
 
+const isPermissionDenied = (e: unknown): boolean =>
+  typeof e === "object" &&
+  e !== null &&
+  "code" in e &&
+  (e as GeolocationPositionError).code ===
+    (e as GeolocationPositionError).PERMISSION_DENIED;
+
+const geolocationErrorMessage = (e: unknown): string =>
+  isPermissionDenied(e)
+    ? "Location access is blocked for this site, so it was probably denied " +
+      "before. To use your real location, open your browser's site " +
+      "settings (usually behind the icon next to the address bar), allow " +
+      "Location, and try again."
+    : "Couldn't determine your location. Please check that location " +
+      "services are enabled on your device and try again.";
+
+export const thunkSetManualLocation =
+  (isManual: boolean): ThunkAction<void, RootState, unknown, UnknownAction> =>
+  async (dispatch) => {
+    dispatch(setGeolocationError(null));
+    dispatch(setIsManualLocation(isManual));
+    if (isManual) {
+      return;
+    }
+    // turning manual location off requires a real position; this triggers
+    // the browser permission prompt if it wasn't granted before
+    try {
+      const position = await getCurrentPosition();
+      dispatch(setPlayerPosition(position));
+    } catch (e) {
+      console.warn("Geolocation unavailable, keeping manual location", e);
+      dispatch(setIsManualLocation(true));
+      dispatch(setGeolocationError(geolocationErrorMessage(e)));
+    }
+  };
+
 export const thunkLocateAndCenter =
   (): ThunkAction<void, RootState, unknown, UnknownAction> =>
   async (dispatch, getState) => {
@@ -296,9 +354,14 @@ export const thunkLocateAndCenter =
       dispatch(setShouldFitBounds(true));
     } else {
       dispatch(setShouldFitBounds(true));
-      const position = await getCurrentPosition();
-      dispatch(setPlayerPositionManually(position));
-      dispatch(setShouldFitBounds(true));
+      try {
+        const position = await getCurrentPosition();
+        dispatch(setPlayerPositionManually(position));
+        dispatch(setShouldFitBounds(true));
+      } catch (e) {
+        console.warn("Geolocation unavailable", e);
+        dispatch(setGeolocationError(geolocationErrorMessage(e)));
+      }
     }
   };
 
@@ -311,6 +374,7 @@ export const {
   deselectAdventure,
   setShouldFitBounds,
   setIsManualLocation,
+  setGeolocationError,
   setPlayerPositionManually,
   setInventory,
   setAdventureAsLoading,
@@ -339,6 +403,9 @@ export const selectShouldFitBounds = (state: RootState) =>
 
 export const selectIsManualLocation = (state: RootState) =>
   state.adventures.isManualLocation;
+
+export const selectGeolocationError = (state: RootState) =>
+  state.adventures.geolocationError;
 
 export const isAlreadyStarted = (
   adventureId: string

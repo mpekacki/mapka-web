@@ -40,6 +40,13 @@ export const LocateIcon = ({ size = 18 }: IconProps) => (
   </svg>
 );
 
+export const CloseIcon = ({ size = 18 }: IconProps) => (
+  <svg {...svgProps(size)}>
+    <path d="M18 6 6 18" />
+    <path d="m6 6 12 12" />
+  </svg>
+);
+
 export const ChevronUpIcon = ({ size = 18 }: IconProps) => (
   <svg {...svgProps(size)}>
     <path d="m18 15-6-6-6 6" />

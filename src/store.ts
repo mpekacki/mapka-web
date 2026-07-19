@@ -32,6 +32,7 @@ export const store = configureStore({
           availableAdventures: mergedAvailableAdventures,
           loadingAdventures: [],
           loadingProgress: {},
+          geolocationError: null,
         }
       : defaultAdventuresState,
   },
