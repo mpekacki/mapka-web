@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "test": "playwright test",
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
@@ -22,6 +23,7 @@
     "react-router-dom": "^7.6.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@types/leaflet": "^1.9.18",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.6",
